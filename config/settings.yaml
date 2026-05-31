@@ -1,0 +1,134 @@
+# NeuroWeave Orchestrator Configuration
+
+database:
+  db_name: "neuroweave.db"
+  timeout_seconds: 30
+
+security:
+  prompt_shield_enabled: true
+  url_filter_enabled: true
+  sandbox_cpu_limit_ms: 1000
+  rate_limit_calls_per_min: 60
+
+orchestrator:
+  default_confidence_threshold: 0.75
+  max_reflection_loops: 3
+  max_autonomous_goals: 5
+  enable_parallel_execution: true
+  enable_agent_debate: true
+
+# Capabilities of available models
+models:
+  gemini-2.5-flash:
+    provider: "gemini"
+    type: "cheap_fast"
+    cost_1k_input: 0.000075
+    cost_1k_output: 0.0003
+    max_tokens: 1048576
+    scoring:
+      speed: 0.95
+      reasoning: 0.70
+      coding: 0.75
+      cost: 0.95
+  gpt-4o-mini:
+    provider: "openai"
+    type: "cheap_fast"
+    cost_1k_input: 0.00015
+    cost_1k_output: 0.0006
+    max_tokens: 128000
+    scoring:
+      speed: 0.90
+      reasoning: 0.75
+      coding: 0.75
+      cost: 0.90
+  gpt-4o:
+    provider: "openai"
+    type: "heavy_reasoning"
+    cost_1k_input: 0.005
+    cost_1k_output: 0.015
+    max_tokens: 128000
+    scoring:
+      speed: 0.75
+      reasoning: 0.95
+      coding: 0.90
+      cost: 0.30
+  llama-3-groq:
+    provider: "groq"
+    type: "cheap_fast"
+    cost_1k_input: 0.0001
+    cost_1k_output: 0.0002
+    max_tokens: 8192
+    scoring:
+      speed: 0.98
+      reasoning: 0.70
+      coding: 0.65
+      cost: 0.98
+  mock-local-router:
+    provider: "mock"
+    type: "offline"
+    cost_1k_input: 0.0000
+    cost_1k_output: 0.0000
+    max_tokens: 32000
+    scoring:
+      speed: 1.00
+      reasoning: 0.85
+      coding: 0.85
+      cost: 1.00
+
+# Fallback Routing Lists
+routing_policies:
+  simple_task:
+    primary: "gemini-2.5-flash"
+    fallbacks: ["gpt-4o-mini", "llama-3-groq", "mock-local-router"]
+  reasoning_task:
+    primary: "gpt-4o"
+    fallbacks: ["gemini-2.5-flash", "gpt-4o-mini", "mock-local-router"]
+  coding_task:
+    primary: "gpt-4o"
+    fallbacks: ["gemini-2.5-flash", "mock-local-router"]
+  offline_fallback:
+    primary: "mock-local-router"
+    fallbacks: ["mock-local-router"]
+
+# Agent Role-Based Access Controls
+permissions:
+  intent_analyzer:
+    allowed_tools: []
+    allow_code_exec: false
+    allow_web_search: false
+    allow_state_mutation: false
+  planner:
+    allowed_tools: ["database_retrieval"]
+    allow_code_exec: false
+    allow_web_search: false
+    allow_state_mutation: true
+  researcher:
+    allowed_tools: ["web_search", "url_scraper"]
+    allow_code_exec: false
+    allow_web_search: true
+    allow_state_mutation: false
+  analyzer:
+    allowed_tools: ["code_executor", "calculator"]
+    allow_code_exec: true
+    allow_web_search: false
+    allow_state_mutation: false
+  memory_agent:
+    allowed_tools: ["vector_search", "vector_insert"]
+    allow_code_exec: false
+    allow_web_search: false
+    allow_state_mutation: true
+  critic:
+    allowed_tools: []
+    allow_code_exec: false
+    allow_web_search: false
+    allow_state_mutation: false
+  debate_engine:
+    allowed_tools: []
+    allow_code_exec: false
+    allow_web_search: false
+    allow_state_mutation: false
+  synthesizer:
+    allowed_tools: []
+    allow_code_exec: false
+    allow_web_search: false
+    allow_state_mutation: false

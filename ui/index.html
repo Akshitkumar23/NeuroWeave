@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroWeave - Autonomous Research & Decision Platform</title>
+    <!-- Google Fonts for Modern Premium Look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <div class="app-container">
+        <!-- Main Top Header -->
+        <header class="app-header glass-card">
+            <div class="logo">
+                <i class="fa-solid fa-network-wired logo-icon"></i>
+                <span class="logo-text">NeuroWeave <span class="logo-sub">OS v1.0</span></span>
+            </div>
+            <div class="header-status">
+                <span id="session-badge" class="badge badge-system">IDLE</span>
+                <span class="host-badge"><i class="fa-solid fa-server"></i> Local Gateway</span>
+            </div>
+        </header>
+
+        <!-- Responsive Dashboard Grid Layout -->
+        <div class="dashboard-grid">
+            
+            <!-- COLUMN 1: CONTROLS & KNOWLEDGE INGESTION (LEFT) -->
+            <aside class="left-panel glass-card">
+                <div class="section-title">
+                    <i class="fa-solid fa-sliders"></i> System Controller
+                </div>
+                
+                <!-- Query Inputs -->
+                <div class="control-group">
+                    <label for="query-input">Strategic Objective</label>
+                    <textarea id="query-input" placeholder="e.g. Build me a market analysis for AI automation startups in India..." rows="3"></textarea>
+                </div>
+
+                <!-- Quick Research Templates -->
+                <div class="control-group">
+                    <span class="small-label" style="margin-bottom: 2px;"><i class="fa-solid fa-wand-magic-sparkles"></i> Quick Research Templates</span>
+                    <div class="templates-grid">
+                        <button class="template-btn" onclick="applyTemplate('startups')">📊 India AI Startups</button>
+                        <button class="template-btn" onclick="applyTemplate('finance')">📈 Cap Valuation Math</button>
+                        <button class="template-btn" onclick="applyTemplate('replan')">🚨 Mock Re-plan Test</button>
+                    </div>
+                </div>
+                
+                <!-- Model Router Credentials Drawer -->
+                <div class="collapsible-drawer">
+                    <button class="drawer-trigger" onclick="toggleDrawer('key-drawer')">
+                        <i class="fa-solid fa-key"></i> API Provider Credentials <i class="fa-solid fa-chevron-down arrow"></i>
+                    </button>
+                    <div id="key-drawer" class="drawer-content hidden">
+                        <!-- API Mode Status Badge -->
+                        <div id="api-mode-badge" style="
+                            display: flex; align-items: center; gap: 6px;
+                            padding: 6px 12px; border-radius: 8px; font-size: 12px;
+                            border: 1px solid rgba(245,158,11,0.4);
+                            background: rgba(245,158,11,0.1); color: #f59e0b;
+                            margin-bottom: 10px; font-weight: 600;
+                        ">
+                            <i class="fa-solid fa-circle-info"></i> Checking status...
+                        </div>
+                        <div class="control-group">
+                            <label for="provider-select">Routed Provider</label>
+                            <select id="provider-select">
+                                <option value="gemini">Google Gemini (Recommended)</option>
+                                <option value="openai">OpenAI</option>
+                                <option value="groq">Groq Network</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <label for="api-key-input">Credential Token Key</label>
+                            <input type="password" id="api-key-input" placeholder="Enter API Key... (Leave blank for Simulated run)">
+                        </div>
+                        <button id="save-key-btn" class="btn btn-secondary btn-sm btn-block" onclick="saveApiKey()" style="margin-top: 6px;">
+                            <i class="fa-solid fa-floppy-disk"></i> Save Key Permanently
+                        </button>
+                        <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 6px; line-height: 1.4;">
+                            Key is saved to browser & server — you won't need to enter it again.
+                        </p>
+                    </div>
+                </div>
+
+                <button id="execute-btn" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-play"></i> Initiate Autonomous Loop
+                </button>
+
+                <div class="divider"></div>
+
+                <!-- RAG Document Uploader -->
+                <div class="section-title">
+                    <i class="fa-solid fa-database"></i> Semantic Knowledge Ingestion
+                </div>
+                <div class="file-uploader" id="drop-zone">
+                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                    <p>Drag & Drop custom reference files here</p>
+                    <span class="file-limits">Supports Plain Text (.txt, .md, .json)</span>
+                    <input type="file" id="file-input" class="hidden" accept=".txt,.md,.json">
+                </div>
+                <div id="upload-status" class="upload-status-text"></div>
+
+                <div class="divider"></div>
+
+                <!-- Run History List -->
+                <div class="section-title">
+                    <i class="fa-solid fa-history"></i> Execution Histories
+                </div>
+                <div class="history-list" id="session-history-list">
+                    <div class="empty-list-placeholder">No historical strategic report compiled yet.</div>
+                </div>
+            </aside>
+
+            <!-- COLUMN 2: GRAPH WORKBENCH & REPORT VISUALIZER (CENTER) -->
+            <main class="center-panel glass-card">
+                <!-- Tabs controls -->
+                <div class="tabs-header">
+                    <button class="tab-btn active" onclick="switchTab('graph-tab')">
+                        <i class="fa-solid fa-diagram-project"></i> Execution Graph
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('report-tab')">
+                        <i class="fa-solid fa-file-invoice"></i> Strategic Report
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('timeline-tab')">
+                        <i class="fa-solid fa-chart-gantt"></i> Latency Timeline
+                    </button>
+                </div>
+
+                <!-- TAB 1: Visual SVG Graph -->
+                <div id="graph-tab" class="tab-content active-content">
+                    <div class="graph-viewport">
+                        <div class="viewport-instructions">
+                            <span class="badge badge-planner"><i class="fa-solid fa-circle-nodes"></i> Interactive DAG Flow</span>
+                            <span class="legend-item"><span class="legend-dot dot-pending"></span> Pending</span>
+                            <span class="legend-item"><span class="legend-dot dot-running pulse"></span> Running</span>
+                            <span class="legend-item"><span class="legend-dot dot-completed"></span> Completed</span>
+                            <span class="legend-item"><span class="legend-dot dot-failed"></span> Re-plan / Failed</span>
+                        </div>
+
+                        <!-- SVG plotting container -->
+                        <svg id="svg-graph" width="100%" height="450">
+                            <!-- SVG elements will be programmatically plotted by app.js -->
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#4f46e5"/>
+                                </marker>
+                                <marker id="arrow-failed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/>
+                                </marker>
+                            </defs>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Synthesized Markdown Strategic Report -->
+                <div id="report-tab" class="tab-content hidden">
+                    <div class="report-wrapper">
+                        <div class="report-actions">
+                            <button id="download-report-btn" class="btn btn-secondary btn-sm" onclick="downloadReport()">
+                                <i class="fa-solid fa-download"></i> Save Report (.md)
+                            </button>
+                        </div>
+                        <article class="markdown-report" id="report-output-box">
+                            <div class="report-placeholder">
+                                <i class="fa-solid fa-file-signature big-icon"></i>
+                                <h3>No report compiled yet.</h3>
+                                <p>Initiate the multi-agent research loop on the left controller to generate your synthesized report.</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- TAB 3: Latency Waterfall Chart -->
+                <div id="timeline-tab" class="tab-content hidden">
+                    <div class="timeline-viewport">
+                        <div class="section-title">
+                            <i class="fa-solid fa-stopwatch"></i> Subtask Execution Gantt-Waterfall spans
+                        </div>
+                        <div id="timeline-waterfall-box" class="gantt-chart-container">
+                            <div class="empty-list-placeholder">Compile a session to visualize execution delays.</div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- COLUMN 3: REAL-TIME THOUGHT LOG TERMINAL (RIGHT) -->
+            <section class="right-panel glass-card">
+                <div class="panel-header">
+                    <div class="section-title">
+                        <i class="fa-solid fa-terminal"></i> Agent Reasoning Logs
+                    </div>
+                    <div class="confidence-indicator">
+                        <span class="small-label">System Confidence</span>
+                        <div class="conf-bar-bg">
+                            <div id="confidence-bar" class="conf-bar-fill" style="width: 0%"></div>
+                        </div>
+                        <span id="confidence-value" class="small-val">0.00</span>
+                    </div>
+                </div>
+
+                <!-- Friendly explanation for normal users -->
+                <div class="logs-explanation-card">
+                    <div class="explanation-icon"><i class="fa-solid fa-circle-question"></i></div>
+                    <div class="explanation-content">
+                        <span class="explanation-title">What are Agent Reasoning Logs?</span>
+                        <p class="explanation-desc">
+                            NeuroWeave splits your strategic goal among multiple specialized AI agents. These logs display their **step-by-step thinking, debates, tool executions, and quality audits** in real-time.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Scrolling log list -->
+                <div class="log-stream-terminal" id="terminal-thought-stream">
+                    <!-- Default introduction thoughts -->
+                    <div class="log-entry log-system">
+                        <span class="log-badge system-badge">SYSTEM</span>
+                        <span class="log-time">[00:00]</span>
+                        <div class="log-text">NeuroWeave OS initialized. Ready for objective analysis instructions.</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- BOTTOM TELEMETRY STATUS BAR -->
+        <footer class="app-footer glass-card">
+            <div class="telemetry-item">
+                <span class="telemetry-label"><i class="fa-solid fa-microchip"></i> Routing Model:</span>
+                <span id="tel-model" class="telemetry-val">N/A</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label"><i class="fa-solid fa-coins"></i> Input Tokens:</span>
+                <span id="tel-tokens-in" class="telemetry-val">0</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label"><i class="fa-solid fa-coins"></i> Output Tokens:</span>
+                <span id="tel-tokens-out" class="telemetry-val">0</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label"><i class="fa-solid fa-money-bill-wave"></i> Estimated Cost:</span>
+                <span id="tel-cost" class="telemetry-val" style="color: #10b981;">$0.000000</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label"><i class="fa-solid fa-screwdriver-wrench"></i> Active Tools:</span>
+                <span id="tel-tools" class="telemetry-val">0</span>
+            </div>
+            <div class="telemetry-item">
+                <span class="telemetry-label"><i class="fa-solid fa-arrow-rotate-left"></i> Re-plans:</span>
+                <span id="tel-replans" class="telemetry-val" style="color: #ef4444;">0</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Script imports -->
+    <script src="app.js"></script>
+</body>
+</html>
