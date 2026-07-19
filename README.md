@@ -77,11 +77,11 @@ graph TD
 
 ---
 
-## 15 Advanced Production-Grade Systems
+## 16 Advanced Production-Grade Systems
 
-1. **Intelligent Model Router** (`core/model_router.py`): Dynamically selects models (Gemini, OpenAI, Groq, or Local Mock) based on latency sensitivity, capability weightings, and financial costs. Performs automatic failover to fallback models.
+1. **Intelligent Model Router** (`core/model_router.py`): Dynamically selects models (Gemini, OpenAI, Groq, or Local Ollama) based on latency sensitivity, capability weightings, and financial costs. Performs automatic failover to fallback models.
 2. **Centralized State Manager** (`core/state_manager.py`): Thread-safe `asyncio.Lock` storage tracking task graph states. Serializes transaction checkpoints to allow safe rollback and crash recovery.
-3. **Tool Registry System** (`core/tool_registry.py`): Decorator-driven runtime decorator registering tools, validating Pydantic schemas, and enforcing timeouts.
+3. **Tool Registry System** (`core/tool_registry.py`): Decorator-driven registered tools, validating Pydantic schemas, and enforcing timeouts.
 4. **Agent Permission System** (`security/permissions.py`): Implements Role-Based Agent Control (RBAC) to restrict tool access (e.g. `Researcher` is strictly blocked from executing Python code).
 5. **Persistent Storage Layer** (`storage/`): CRUD repository pattern implemented with `aiosqlite` backing up sessions, logs, traces, and synthesized strategic reports.
 6. **Observability Pipeline** (`observability/`): Console/file-based asynchronous JSON logger, token counter meters, cost estimators, and latency waterfall tracers.
@@ -94,6 +94,18 @@ graph TD
 13. **Configuration Layer** (`config/`): System settings, agent registries, prompts, and cost parameters externalized in clean YAML files.
 14. **Autonomous Goal Expansion**: Planner scans Critic rejections to autonomously inject subtasks exploring risk factors, competitor profiles, or funding rounds on-the-fly.
 15. **Multi-Agent Debate System** (`agents/debate_engine.py`): Runs 2-round cross-arguments between Critic challenges and Researcher claims to build a verified consensus.
+16. **Machine Learning & NLP Insights Engine** (`utils/ml_utils.py`): Leverages TextBlob locally to evaluate sentiment scores and extract top keyphrases from finalized reports.
+
+---
+
+## Next-Gen UI Features (Interactive Dashboard)
+We have expanded the Vanilla glassmorphic dashboard to offer top-tier interactive utility:
+1. **Dynamic Chart.js Graphs**: When comparing numeric data, the system automatically draws responsive Bar and Pie charts dynamically using Chart.js inside the markdown.
+2. **Interactive Speech-to-Text Input**: Click the microphone icon next to the input to talk. It features start/stop toggles with recording pulse borders.
+3. **Session History Sidebar**: Save and retrieve past research tasks with full deletion functionality (without confirmation popup annoyances).
+4. **1-Click PDF Export**: Save your report instantly as a polished PDF using `html2pdf.js`.
+5. **Direct URL Ingestion**: Paste webpage links to instantly scrape and index them into semantic memory for prompt contexts.
+6. **Human-in-the-Loop Override**: Interrupt execution to steer the orchestration debate using `/api/override`.
 
 ---
 
@@ -113,7 +125,7 @@ pip install -r requirements.txt
 
 ### 2. Configure Credentials (Optional)
 Fill in your API keys in the `.env` file to enable semantic embeddings and external routing. 
-*Note: If keys are left blank, the platform automatically switches to **Mock Router Mode**, utilizing dynamic keyword engines to simulate full multi-agent debates, RAG, and planning loops!*
+*Note: If keys are left blank, the platform automatically switches to **Local Ollama Mode**, routing requests to LLaMA3 hosted locally on `http://localhost:11434`!*
 
 ```ini
 # .env Configuration
@@ -143,7 +155,7 @@ python scratch/verify_system.py
 
 ### Verification Outcomes:
 - **Guardrails Verified**: Prompt jailbreak attempts stripped, local host URL scraping blocked, and unsafe code execution imports (`import os`) successfully intercepted.
-- **Model Router Verified**: Selecting best models dynamically, with resilient failovers to local simulated routines on API timeouts.
+- **Model Router Verified**: Selecting best models dynamically, with resilient failovers to local Ollama routines on API timeouts.
 - **State Checkpoints Verified**: Atomic task DAG additions and successful state rollbacks to previous transactional checkpoints.
 - **Agent Permission (RBAC) Interceptor Verified**: Attempts by the `Researcher` agent to trigger the safe `code_executor` tool successfully intercepted and blocked.
 - **Pure-Python Vector Store Ingestion Verified**: Semantic/keyphrase documents vectorized and retrieved with correct relevance ranks.
@@ -203,6 +215,5 @@ Quantitative baselines comparing execution parameters:
 
 ## Limitations & Future Improvements
 
-1. **Local Sandboxing limits**: Thesafe python execution blocks imports natively. Future upgrades could bind isolated container environments (e.g. Docker API) for unconstrained computations.
-2. **indic Lang Support**: Expand standard prompt templates to natively support Indic script translation interfaces.
-3. **Complex Charts rendering**: Embed static Chart.js rendering functions directly inside synthesized strategic documents.
+1. **Local Sandboxing limits**: The safe python execution blocks imports natively. Future upgrades could bind isolated container environments (e.g. Docker API) for unconstrained computations.
+2. **Indic Lang Support**: Expand standard prompt templates to natively support Indic script translation interfaces.

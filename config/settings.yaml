@@ -19,7 +19,7 @@ orchestrator:
 
 # Capabilities of available models
 models:
-  gemini-2.5-flash:
+  gemini-1.5-flash:
     provider: "gemini"
     type: "cheap_fast"
     cost_1k_input: 0.000075
@@ -63,14 +63,14 @@ models:
       reasoning: 0.70
       coding: 0.65
       cost: 0.98
-  mock-local-router:
-    provider: "mock"
+  ollama-llama3:
+    provider: "ollama"
     type: "offline"
     cost_1k_input: 0.0000
     cost_1k_output: 0.0000
-    max_tokens: 32000
+    max_tokens: 8192
     scoring:
-      speed: 1.00
+      speed: 0.90
       reasoning: 0.85
       coding: 0.85
       cost: 1.00
@@ -78,17 +78,17 @@ models:
 # Fallback Routing Lists
 routing_policies:
   simple_task:
-    primary: "gemini-2.5-flash"
-    fallbacks: ["gpt-4o-mini", "llama-3-groq", "mock-local-router"]
+    primary: "gemini-1.5-flash"
+    fallbacks: ["gpt-4o-mini", "llama-3-groq", "ollama-llama3"]
   reasoning_task:
     primary: "gpt-4o"
-    fallbacks: ["gemini-2.5-flash", "gpt-4o-mini", "mock-local-router"]
+    fallbacks: ["gemini-1.5-flash", "gpt-4o-mini", "ollama-llama3"]
   coding_task:
     primary: "gpt-4o"
-    fallbacks: ["gemini-2.5-flash", "mock-local-router"]
+    fallbacks: ["gemini-1.5-flash", "ollama-llama3"]
   offline_fallback:
-    primary: "mock-local-router"
-    fallbacks: ["mock-local-router"]
+    primary: "ollama-llama3"
+    fallbacks: ["ollama-llama3"]
 
 # Agent Role-Based Access Controls
 permissions:

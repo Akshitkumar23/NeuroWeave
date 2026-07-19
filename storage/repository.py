@@ -28,6 +28,20 @@ class SessionRepository:
             logger.error(f"Error creating session record: {e}")
             return False
 
+    async def delete_session(self, session_id: str) -> bool:
+        try:
+            async with await self.db.get_connection() as conn:
+                # Delete related logs, reports, and traces to keep db clean
+                await conn.execute("DELETE FROM execution_logs WHERE session_id = ?", (session_id,))
+                await conn.execute("DELETE FROM reports WHERE session_id = ?", (session_id,))
+                await conn.execute("DELETE FROM traces WHERE session_id = ?", (session_id,))
+                await conn.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
+                await conn.commit()
+                return True
+        except Exception as e:
+            logger.error(f"Error deleting session: {e}")
+            return False
+
     async def update_session_status(self, session_id: str, status: str, metrics: Optional[Dict[str, Any]] = None) -> bool:
         try:
             async with await self.db.get_connection() as conn:
