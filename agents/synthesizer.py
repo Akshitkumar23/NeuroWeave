@@ -55,9 +55,20 @@ class SynthesizerAgent:
         # Generate standard bibliography citations footer
         bibliography = self.citation_mgr.generate_bibliography()
         
+        # ML Feature: Analyze text sentiment and extract keywords
+        from utils.ml_utils import analyze_report_ml
+        ml_stats = analyze_report_ml(report_md)
+        
+        sentiment = ml_stats.get("sentiment", "Neutral")
+        score = ml_stats.get("score", 0.0)
+        keywords = ml_stats.get("keywords", [])
+        
+        # Build a nice markdown header for the ML metrics
+        ml_header = f"> **🤖 ML Insights** • Sentiment: {sentiment} ({score:.2f}) • Keywords: {', '.join(keywords)}\n\n"
+        
         final_document = (
+            f"{ml_header}"
             f"{report_md}\n\n"
             f"{bibliography}"
         )
-        
         return final_document

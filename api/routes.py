@@ -3,6 +3,8 @@ import asyncio
 import uuid
 import json
 import logging
+import urllib.request
+import re
 from fastapi import APIRouter, UploadFile, File, Form, BackgroundTasks, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -20,6 +22,7 @@ db_manager: Optional[DatabaseManager] = None
 
 # Active sessions stream queues
 session_queues: Dict[str, asyncio.Queue] = {}
+override_queues: Dict[str, str] = {}
 
 class AnalysisRequest(BaseModel):
     query: str
@@ -29,6 +32,13 @@ class AnalysisRequest(BaseModel):
 class SaveKeyRequest(BaseModel):
     api_key: str
     provider: Optional[str] = "gemini"
+
+class UrlIngestRequest(BaseModel):
+    url: str
+    session_id: str
+
+class OverrideRequest(BaseModel):
+    message: str
 
 @router.post("/api/analyze")
 async def start_analysis(request: AnalysisRequest, background_tasks: BackgroundTasks):
@@ -161,6 +171,17 @@ async def list_sessions():
     sessions = await repo.list_sessions()
     return {"sessions": sessions}
 
+@router.delete("/api/sessions/{session_id}")
+async def delete_session(session_id: str):
+    global db_manager
+    if not db_manager:
+        raise HTTPException(status_code=500, detail="Database not initialized.")
+    repo = SessionRepository(db_manager)
+    success = await repo.delete_session(session_id)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to delete session.")
+    return {"success": True}
+
 @router.get("/api/report/{session_id}")
 async def get_report(session_id: str):
     global db_manager
@@ -170,7 +191,13 @@ async def get_report(session_id: str):
     report = await repo.get_session_report(session_id)
     if not report:
         raise HTTPException(status_code=404, detail="Synthesized report not found for this session.")
-    return report
+    # Return both 'content' and 'report' keys for backward compatibility with UI
+    return {
+        "report": report.get("content", ""),
+        "content": report.get("content", ""),
+        "confidence_score": report.get("confidence_score", 0.0),
+        "timestamp": report.get("timestamp", 0)
+    }
 
 @router.post("/api/save-key")
 async def save_api_key(request: SaveKeyRequest):
@@ -239,6 +266,7 @@ async def get_key_status():
         "gemini": bool(os.environ.get("GEMINI_API_KEY")),
         "openai": bool(os.environ.get("OPENAI_API_KEY")),
         "groq": bool(os.environ.get("GROQ_API_KEY")),
+        "ollama": True
     }
     active_providers = [p for p, has_key in providers.items() if has_key]
     return {
@@ -247,3 +275,33 @@ async def get_key_status():
         "active_providers": active_providers,
         "mode": "live" if active_providers else "simulation"
     }
+
+@router.post("/api/ingest-url")
+async def ingest_url(request: UrlIngestRequest):
+    global db_manager
+    if not db_manager:
+        raise HTTPException(status_code=500, detail="Database not initialized.")
+    try:
+        req = urllib.request.Request(request.url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req) as response:
+            html = response.read().decode('utf-8', errors='ignore')
+        
+        # Simple regex to strip tags
+        text = re.sub(r'<[^>]+>', ' ', html)
+        text = re.sub(r'\s+', ' ', text).strip()
+
+        orchestrator = MasterOrchestrator(request.session_id, db_manager)
+        await orchestrator.memory.ingest_document(
+            text=text,
+            document_name=request.url,
+            api_key=None
+        )
+        return {"success": True, "url": request.url}
+    except Exception as e:
+        logger.error(f"Error ingesting URL: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/api/override/{session_id}")
+async def override_session(session_id: str, request: OverrideRequest):
+    override_queues[session_id] = request.message
+    return {"success": True, "session_id": session_id, "message": "Override queued."}

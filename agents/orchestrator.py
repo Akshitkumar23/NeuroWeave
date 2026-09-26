@@ -118,6 +118,12 @@ class MasterOrchestrator:
             await self.state.add_log("system", f"🔄 Initiating graph execution round {loop_count}...", "info")
             await self.broadcast_state()
             
+            if self.state.override_message:
+                override_msg = self.state.override_message
+                await self.state.add_log("system", f"⚠️ Manual Override Intercepted: {override_msg}", "warning")
+                self.state.override_message = None
+                rag_context += f"\n[CRITICAL OVERRIDE]: {override_msg}"
+            
             # Execute subtasks in topological ordering (parallel execution of non-dependent nodes)
             await self._execute_dag()
             

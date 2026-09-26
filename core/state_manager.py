@@ -25,8 +25,14 @@ class StateManager:
         self.episodic_references: List[str] = []
         self.semantic_references: List[Dict[str, Any]] = []
         
+        self.override_message: Optional[str] = None
+        
         # Snapshots for rollbacks & checkpointing
         self._snapshots: List[Dict[str, Any]] = []
+
+    async def set_override(self, msg: str):
+        async with self._lock:
+            self.override_message = msg
 
     async def initialize_session(self, query: str):
         async with self._lock:

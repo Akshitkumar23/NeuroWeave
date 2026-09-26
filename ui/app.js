@@ -1,853 +1,851 @@
-// System state trackers
+// ─── STATE ──────────────────────────────────────────────────────
 let activeSessionId = null;
-let eventSource = null;
+let eventSource     = null;
 let currentReportMd = "";
+let logCount        = 0;
+let logsOpen        = false;
+let speechRecognitionInstance = null;
+let isSpeechRecording = false;
 
+// ─── INIT ────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
-    // Setup event listeners
+    // Run button
     document.getElementById("execute-btn").addEventListener("click", initiateOrchestration);
-    
-    // Drag & Drop event bindings
-    const dropZone = document.getElementById("drop-zone");
+
+    // File drop zone
+    const dropZone  = document.getElementById("drop-zone");
     const fileInput = document.getElementById("file-input");
-    
     dropZone.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", (e) => handleFileUpload(e.target.files[0]));
-    
-    dropZone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        dropZone.style.borderColor = "#8b5cf6";
-    });
-    dropZone.addEventListener("dragleave", () => {
-        dropZone.style.borderColor = "rgba(255,255,255,0.08)";
-    });
+    dropZone.addEventListener("dragover",  (e) => { e.preventDefault(); dropZone.style.borderColor = "#6366f1"; });
+    dropZone.addEventListener("dragleave", ()  => { dropZone.style.borderColor = ""; });
     dropZone.addEventListener("drop", (e) => {
         e.preventDefault();
-        dropZone.style.borderColor = "rgba(255,255,255,0.08)";
-        if (e.dataTransfer.files.length > 0) {
-            handleFileUpload(e.dataTransfer.files[0]);
-        }
+        dropZone.style.borderColor = "";
+        if (e.dataTransfer.files.length > 0) handleFileUpload(e.dataTransfer.files[0]);
     });
 
-    // Load session histories
+    // Load session history
     loadSessionHistory();
-    
-    // Auto-load saved API key from localStorage
-    const savedKey = localStorage.getItem("neuroweave_api_key");
+
+    // Restore saved key
+    const savedKey      = localStorage.getItem("neuroweave_api_key");
     const savedProvider = localStorage.getItem("neuroweave_provider") || "gemini";
     if (savedKey) {
-        document.getElementById("api-key-input").value = savedKey;
-        document.getElementById("provider-select").value = savedProvider;
+        document.getElementById("api-key-input").value    = savedKey;
+        document.getElementById("provider-select").value  = savedProvider;
     }
-    
-    // Check server-side key status
+
     checkKeyStatus();
 });
 
-// Check if keys are already configured on server side
+// ─── LOGS SIDEBAR TOGGLE ─────────────────────────────────────────
+function toggleLogs() {
+    const sidebar  = document.getElementById("logs-sidebar");
+    const overlay  = document.getElementById("logs-overlay");
+    const notif    = document.getElementById("logs-notif");
+    logsOpen = !logsOpen;
+    sidebar.classList.toggle("open", logsOpen);
+    overlay.classList.toggle("active", logsOpen);
+    if (logsOpen && notif) notif.style.display = "none";
+}
+
+// ─── SECTION COLLAPSE ────────────────────────────────────────────
+function toggleSection(bodyId) {
+    const body  = document.getElementById(bodyId);
+    const arrow = body.previousElementSibling
+                      ? body.previousElementSibling.querySelector(".cp-toggle i")
+                      : null;
+    body.classList.toggle("hidden");
+    if (arrow) arrow.style.transform = body.classList.contains("hidden") ? "rotate(0deg)" : "rotate(180deg)";
+}
+
+// ─── TAB SWITCHING ───────────────────────────────────────────────
+function switchTab(tabId) {
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.add("hidden"));
+    document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+    document.getElementById(tabId).classList.remove("hidden");
+    // Activate matching tab button
+    const tabMap = { "graph-tab": "tab-btn-graph", "report-tab": "tab-btn-report", "timeline-tab": "tab-btn-timeline" };
+    const btn = document.getElementById(tabMap[tabId]);
+    if (btn) btn.classList.add("active");
+}
+
+// ─── KEY STATUS CHECK ────────────────────────────────────────────
 async function checkKeyStatus() {
     try {
-        const res = await fetch("/api/key-status");
+        const res  = await fetch("/api/key-status");
         const data = await res.json();
         const badge = document.getElementById("api-mode-badge");
-        if (badge) {
-            if (data.mode === "live") {
-                badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Live Mode (${data.active_providers.join(", ")})`;
-                badge.style.background = "rgba(16, 185, 129, 0.2)";
-                badge.style.borderColor = "#10b981";
-                badge.style.color = "#10b981";
-            } else {
-                badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> Simulation Mode`;
-                badge.style.background = "rgba(245, 158, 11, 0.15)";
-                badge.style.borderColor = "#f59e0b";
-                badge.style.color = "#f59e0b";
-            }
+        if (!badge) return;
+        if (data.active_providers && data.active_providers.includes("ollama")) {
+            badge.className = "api-badge api-sim";
+            badge.innerHTML = `<i class="fa-solid fa-microchip"></i> Local Model (Ollama)`;
+            badge.style.color = "#8b5cf6";
+            badge.style.border = "1px solid rgba(139, 92, 246, 0.3)";
+        } else if (data.active_count > 0) {
+            badge.className = "api-badge api-live";
+            badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Live — ${data.active_providers.join(", ")}`;
+        } else {
+            badge.className = "api-badge api-sim";
+            badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> Simulation Mode`;
         }
-    } catch(e) {
-        console.log("Could not check key status:", e);
+    } catch(e) { console.log("Key status check error:", e); }
+}
+
+function handleProviderChange() {
+    const provider = document.getElementById("provider-select").value;
+    const keyInput = document.getElementById("api-key-input");
+    const saveBtn = document.querySelector(".btn-save");
+    
+    if (provider === "ollama") {
+        keyInput.style.display = "none";
+        saveBtn.style.display = "none";
+    } else {
+        keyInput.style.display = "block";
+        saveBtn.style.display = "inline-block";
     }
 }
 
-// Save API key persistently
+// ─── SAVE API KEY ────────────────────────────────────────────────
 async function saveApiKey() {
-    const apiKey = document.getElementById("api-key-input").value.trim();
+    const apiKey   = document.getElementById("api-key-input").value.trim();
     const provider = document.getElementById("provider-select").value;
-    
-    if (!apiKey) {
-        alert("Please enter an API key first.");
-        return;
-    }
-    
-    const saveBtn = document.getElementById("save-key-btn");
-    if (saveBtn) {
-        saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
-        saveBtn.disabled = true;
-    }
-    
-    // Save to localStorage
+    if (!apiKey && provider !== "ollama") { alert("Enter an API key first."); return; }
+
     localStorage.setItem("neuroweave_api_key", apiKey);
     localStorage.setItem("neuroweave_provider", provider);
-    
-    // Save to server .env file
+
     try {
-        const res = await fetch("/api/save-key", {
+        const res  = await fetch("/api/save-key", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ api_key: apiKey, provider: provider })
+            body: JSON.stringify({ api_key: apiKey, provider })
         });
         const data = await res.json();
         if (data.success) {
+            const btn = document.getElementById("execute-btn");
+            // Brief visual feedback inline
+            const saveBtn = document.querySelector(".btn-save");
             if (saveBtn) {
-                saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> Key Saved!`;
-                saveBtn.style.background = "rgba(16, 185, 129, 0.3)";
-                saveBtn.style.borderColor = "#10b981";
+                saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> Saved!`;
+                saveBtn.style.color = "#10b981";
                 setTimeout(() => {
                     saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Key`;
-                    saveBtn.style.background = "";
-                    saveBtn.style.borderColor = "";
-                    saveBtn.disabled = false;
-                }, 2500);
+                    saveBtn.style.color = "";
+                }, 2000);
             }
             checkKeyStatus();
         }
-    } catch(e) {
-        if (saveBtn) {
-            saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Save Key`;
-            saveBtn.disabled = false;
-        }
-        alert("Saved to browser, but could not persist to server: " + e);
-    }
+    } catch(e) { console.log("Save key error:", e); }
 }
 
-// UI Drawer Control
-function toggleDrawer(drawerId) {
-    const drawer = document.getElementById(drawerId);
-    const arrow = drawer.previousElementSibling.querySelector(".arrow");
-    drawer.classList.toggle("hidden");
-    if (drawer.classList.contains("hidden")) {
-        arrow.style.transform = "rotate(0deg)";
-    } else {
-        arrow.style.transform = "rotate(180deg)";
-    }
+// ─── TEMPLATES REMOVED FOR CLEAN UI ──────────────────────────────
+
+// ─── SET STATUS ──────────────────────────────────────────────────
+function setStatus(type, text) {
+    const pill = document.getElementById("status-pill");
+    const span = document.getElementById("status-text");
+    pill.className = `status-pill status-${type}`;
+    span.textContent = text;
 }
 
-// UI Tabs Switching
-function switchTab(tabId) {
-    // Hide all tab contents
-    document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
-    document.querySelectorAll(".tab-content").forEach(el => el.classList.remove("active-content"));
-    
-    // Deactivate all tab buttons
-    document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
-    
-    // Show selected
-    const activeTab = document.getElementById(tabId);
-    activeTab.classList.remove("hidden");
-    activeTab.classList.add("active-content");
-    
-    // Highlight button
-    const activeBtn = Array.from(document.querySelectorAll(".tab-btn")).find(btn => btn.getAttribute("onclick").includes(tabId));
-    if (activeBtn) activeBtn.classList.add("active");
-}
-
-// Initiates the Asynchronous multi-agent execution pipeline
+// ─── INITIATE ORCHESTRATION ──────────────────────────────────────
 async function initiateOrchestration() {
-    const query = document.getElementById("query-input").value.trim();
-    if (!query) {
-        alert("Please enter a strategic research objective query.");
-        return;
-    }
-
-    const apiKey = document.getElementById("api-key-input").value.trim();
+    const query    = document.getElementById("query-input").value.trim();
+    const apiKey   = document.getElementById("api-key-input").value.trim();
     const provider = document.getElementById("provider-select").value;
 
-    // Auto-save API key to localStorage (and server) if provided
+    if (!query) {
+        alert("Please enter a research query.");
+        return;
+    }
+    
+    if (provider !== "ollama" && !apiKey && !localStorage.getItem("neuroweave_api_key")) {
+        console.log("No API key provided, fallback simulated run will execute");
+    }
+
+    if (!query) { alert("Enter a research objective first."); return; }
+
+    // Reset log count & show logs automatically
+    logCount = 0;
+    document.getElementById("log-count-badge").textContent = "0";
+    document.getElementById("terminal-thought-stream").innerHTML = "";
+
+    // Clear output panels
+    document.getElementById("svg-graph").innerHTML = `
+        <text x="50%" y="50%" text-anchor="middle" fill="rgba(255,255,255,0.2)"
+            font-size="14" font-family="Inter">Initializing execution graph...</text>`;
+    document.getElementById("report-output-box").innerHTML = `
+        <div class="report-empty">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:32px;color:#6366f1;opacity:0.7"></i>
+            <h3>Synthesizing report...</h3>
+            <p>Multi-agent pipeline is running. Open <strong>Agent Logs</strong> to watch live.</p>
+        </div>`;
+
+    const btn = document.getElementById("execute-btn");
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Initializing...</span>`;
+    setStatus("running", "RUNNING — Multi-Agent Pipeline Active");
+
+    // Show logs notif
+    const notif = document.getElementById("logs-notif");
+    if (notif) notif.style.display = "block";
+
+    // Auto-save key
     if (apiKey) {
         localStorage.setItem("neuroweave_api_key", apiKey);
         localStorage.setItem("neuroweave_provider", provider);
-        // Background save to server - don't await
         fetch("/api/save-key", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ api_key: apiKey, provider: provider })
+            body: JSON.stringify({ api_key: apiKey, provider })
         }).then(() => checkKeyStatus()).catch(() => {});
     }
 
-    const executeBtn = document.getElementById("execute-btn");
-    executeBtn.disabled = true;
-    executeBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Organizing Agent Grid...`;
-
-    // Clear UI structures
-    document.getElementById("terminal-thought-stream").innerHTML = "";
-    document.getElementById("svg-graph").innerHTML = "";
-    document.getElementById("report-output-box").innerHTML = `
-        <div class="report-placeholder">
-            <i class="fa-solid fa-spinner fa-spin big-icon"></i>
-            <h3>Synthesizing strategic report...</h3>
-            <p>Subagents are currently executing tasks, scraping facts, and calculating values.</p>
-        </div>
-    `;
-
     try {
-        const response = await fetch("/api/analyze", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                query: query,
-                api_key: apiKey || null,
-                provider: provider
-            })
+        const res  = await fetch("/api/analyze", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ query, api_key: apiKey || null, provider })
         });
-
-        const data = await response.json();
+        const data = await res.json();
         if (data.success) {
             activeSessionId = data.session_id;
-            loggerSystemMessage(`Autonomous Orchestrator spawned pipeline: ${activeSessionId}`);
-            // Establish SSE connection
+            appendLog("system", "SYSTEM", `Pipeline started — Session: ${activeSessionId}`);
             connectSSE(activeSessionId);
         } else {
             alert(`Error: ${data.message}`);
-            executeBtn.disabled = false;
-            executeBtn.innerHTML = `<i class="fa-solid fa-play"></i> Initiate Autonomous Loop`;
+            resetRunBtn();
+            setStatus("error", "ERROR — Pipeline failed to start");
         }
-    } catch (e) {
-        alert(`Failed to talk to FastAPI backend: ${e}`);
-        executeBtn.disabled = false;
-        executeBtn.innerHTML = `<i class="fa-solid fa-play"></i> Initiate Autonomous Loop`;
+    } catch(e) {
+        alert(`Backend unreachable: ${e}`);
+        resetRunBtn();
+        setStatus("error", "ERROR — Server connection failed");
     }
 }
 
-// Establishes Server-Sent Events stream connection to retrieve real-time state changes
+function resetRunBtn() {
+    const btn = document.getElementById("execute-btn");
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-bolt"></i> <span>Run Analysis</span>`;
+}
+
+// ─── SSE CONNECTION ──────────────────────────────────────────────
 function connectSSE(sessionId) {
-    if (eventSource) {
-        eventSource.close();
-    }
-
+    if (eventSource) eventSource.close();
     eventSource = new EventSource(`/api/stream/${sessionId}`);
-    
-    eventSource.onmessage = (event) => {
-        const state = JSON.parse(event.data);
-        updateDashboardUI(state);
+    eventSource.onmessage = (e) => {
+        const state = JSON.parse(e.data);
+        updateUI(state);
     };
-
-    eventSource.onerror = (e) => {
-        console.log("SSE Connection concluded or timed out.", e);
+    eventSource.onerror = () => {
         eventSource.close();
-        document.getElementById("execute-btn").disabled = false;
-        document.getElementById("execute-btn").innerHTML = `<i class="fa-solid fa-play"></i> Initiate Autonomous Loop`;
+        resetRunBtn();
         loadSessionHistory();
     };
 }
 
-// Global UI Redraw Coordinator
-function updateDashboardUI(state) {
-    // 1. Update session badges & status
-    const status = state.status.toUpperCase();
-    const badge = document.getElementById("session-badge");
-    badge.innerText = status;
-    badge.className = "badge";
-    if (status === "RUNNING") badge.classList.add("badge-planner");
-    else if (status === "COMPLETED") badge.classList.add("badge-analyzer");
-    else if (status === "REPLANNING") badge.classList.add("badge-critic");
-    else if (status === "FAILED") badge.classList.add("badge-failed");
-    else badge.classList.add("badge-system");
+// ─── MAIN UI UPDATE ──────────────────────────────────────────────
+function updateUI(state) {
+    const status     = (state.status || "").toLowerCase();
+    const activeAgent = (state.active_agent || "").toLowerCase();
 
-    // Dynamic execute button progression text & states
-    const executeBtn = document.getElementById("execute-btn");
-    if (status === "COMPLETED" || status === "FAILED" || status === "DEGRADED") {
-        executeBtn.disabled = false;
-        executeBtn.innerHTML = `<i class="fa-solid fa-play"></i> Initiate Autonomous Loop`;
+    // Status pill
+    const done = status === "completed" || status === "degraded";
+    const fail = status === "failed";
+    if (done)       setStatus("done",    "DONE — Report Ready");
+    else if (fail)  setStatus("error",   "ERROR — Pipeline Failed");
+    else            setStatus("running", `RUNNING — ${agentLabel(activeAgent)}`);
+
+    // Run button
+    if (done || fail) {
+        resetRunBtn();
     } else {
-        const activeAgent = (state.active_agent || "").toLowerCase();
-        let stepText = "Organizing Agent Grid...";
-        if (activeAgent === "intent_analyzer") stepText = "1. Analyzing Intent...";
-        else if (activeAgent === "planner") stepText = "2. Planning Task DAG...";
-        else if (activeAgent === "researcher") stepText = "3. Gathering Web Insights...";
-        else if (activeAgent === "analyzer") stepText = "4. Sandbox Calculations...";
-        else if (activeAgent === "critic") stepText = "5. Auditing Code & Logic...";
-        else if (activeAgent === "debate_engine") stepText = "6. Consensus Debate...";
-        else if (activeAgent === "synthesizer") stepText = "7. Generating Report...";
-        
-        executeBtn.disabled = true;
-        executeBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${stepText}`;
+        const btn = document.getElementById("execute-btn");
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>${agentLabel(activeAgent)}</span>`;
     }
 
-    // 2. Render logs in stream terminal
-    renderReasoningLogs(state.logs);
+    // Logs
+    renderLogs(state.logs || []);
 
-    // 3. Compute coordinates & Plot SVG Graph
-    plotSvgGraph(state.tasks, state.active_agent);
+    // Graph
+    plotGraph(state.tasks || {}, activeAgent);
 
-    // 4. Gantt waterfall latencies chart
-    plotLatencyWaterfall(state.traces || []);
+    // Timeline
+    plotTimeline(state.traces || []);
 
-    // 5. Update confidence metrics
-    const avgConf = state.average_confidence || 0.00;
-    document.getElementById("confidence-value").innerText = avgConf.toFixed(2);
-    document.getElementById("confidence-bar").style.width = `${avgConf * 100}%`;
+    // Confidence
+    const conf = state.average_confidence || 0;
+    document.getElementById("confidence-bar").style.width   = `${conf * 100}%`;
+    document.getElementById("confidence-value").textContent = conf.toFixed(2);
 
-    // 6. Update telemetry metrics counters
-    const metrics = state.metrics || {};
-    document.getElementById("tel-model").innerText = state.active_agent.toUpperCase() || "N/A";
-    document.getElementById("tel-tokens-in").innerText = metrics.total_input_tokens || 0;
-    document.getElementById("tel-tokens-out").innerText = metrics.total_output_tokens || 0;
-    document.getElementById("tel-cost").innerText = `$${(metrics.total_estimated_cost_usd || 0.0).toFixed(6)}`;
-    
-    const activeToolsCount = Object.values(metrics.tool_calls_summary || {}).reduce((a, b) => a + b, 0);
-    document.getElementById("tel-tools").innerText = activeToolsCount;
-    document.getElementById("tel-replans").innerText = metrics.replanning_cycle_count || 0;
+    // Telemetry
+    const m = state.metrics || {};
+    document.getElementById("tel-model").textContent       = activeAgent ? activeAgent.toUpperCase() : "—";
+    document.getElementById("tel-tokens-in").textContent   = m.total_input_tokens  || 0;
+    document.getElementById("tel-tokens-out").textContent  = m.total_output_tokens || 0;
+    document.getElementById("tel-cost").textContent        = `$${(m.total_estimated_cost_usd || 0).toFixed(6)}`;
+    document.getElementById("tel-replans").textContent     = m.replanning_cycle_count || 0;
+    const toolsTotal = Object.values(m.tool_calls_summary || {}).reduce((a,b) => a+b, 0);
+    document.getElementById("tel-tools").textContent       = toolsTotal;
 
-    // 7. Render Strategic Report if completed
-    const finalReport = state.working_memory ? state.working_memory.final_report : null;
-    if (finalReport) {
-        currentReportMd = finalReport;
-        renderReportMarkdown(finalReport);
-        // Switch tab to report automatically
+    // Report
+    const report = state.working_memory ? state.working_memory.final_report : null;
+    if (report) {
+        currentReportMd = report;
+        renderReport(report);
         switchTab("report-tab");
+        const meta = document.getElementById("report-meta");
+        if (meta) meta.textContent = `Confidence: ${conf.toFixed(2)} · Session: ${activeSessionId ? activeSessionId.slice(0,8) : "—"}`;
     }
 }
 
-// Render Markdown report output natively
-// Helper function to parse inline elements inside markdown text
-function parseInlineMarkdown(text) {
-    let result = text;
-    // Bold
-    result = result.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-    // Italic
-    result = result.replace(/\*(.*?)\*/g, "<em>$1</em>");
-    // Links [text](url)
-    result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="report-link">$1</a>');
-    // Inline superscript citation link pointing to the bibliography item anchor
-    result = result.replace(/\[\^(\d+)\](?!\s*:)/g, '<a id="cite-link-$1" href="#cite-$1" class="citation-link"><sup class="citation-sup">[$1]</sup></a>');
-    return result;
+function agentLabel(agent) {
+    const map = {
+        intent_analyzer: "Analyzing Intent...",
+        planner:         "Planning Task DAG...",
+        researcher:      "Researching Web Sources...",
+        analyzer:        "Running Calculations...",
+        critic:          "Auditing Quality...",
+        debate_engine:   "Running Debate...",
+        synthesizer:     "Generating Report..."
+    };
+    return map[agent] || "Processing...";
 }
 
-// Render Markdown report output natively with robust tables & active APA citations
-function renderReportMarkdown(mdText) {
+// ─── RENDER LOGS ─────────────────────────────────────────────────
+function renderLogs(logs) {
+    const stream = document.getElementById("terminal-thought-stream");
+    const prevCount = logCount;
+    
+    // Only append new entries
+    if (logs.length > logCount) {
+        for (let i = logCount; i < logs.length; i++) {
+            const log = logs[i];
+            appendLog(log.type, log.agent, log.message, log.timestamp);
+        }
+        logCount = logs.length;
+        document.getElementById("log-count-badge").textContent = logCount;
+
+        // Show notification if sidebar is closed
+        if (!logsOpen && logCount > prevCount) {
+            const notif = document.getElementById("logs-notif");
+            if (notif) notif.style.display = "block";
+        }
+    }
+}
+
+function appendLog(type, agent, message, timestamp) {
+    const stream = document.getElementById("terminal-thought-stream");
+    const row = document.createElement("div");
+    row.className = `log-entry log-${type || "info"}`;
+
+    const timeStr = timestamp
+        ? new Date(timestamp * 1000).toTimeString().slice(0, 8)
+        : new Date().toTimeString().slice(0, 8);
+
+    const badgeClass = getBadgeClass(agent);
+    row.innerHTML = `
+        <span class="log-badge ${badgeClass}">${(agent || "SYS").toUpperCase()}</span>
+        <span class="log-time">[${timeStr}]</span>
+        <span class="log-text">${escHtml(message)}</span>`;
+    stream.appendChild(row);
+    stream.scrollTop = stream.scrollHeight;
+}
+
+function getBadgeClass(agent) {
+    const map = {
+        system:          "badge-system",
+        intent_analyzer: "badge-intent",
+        planner:         "badge-planner",
+        researcher:      "badge-researcher",
+        analyzer:        "badge-analyzer",
+        critic:          "badge-critic",
+        debate_engine:   "badge-debate",
+        synthesizer:     "badge-synthesizer"
+    };
+    return map[(agent||"").toLowerCase()] || "badge-system";
+}
+
+function escHtml(s) {
+    return (s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// ─── RENDER REPORT (Markdown → HTML) ────────────────────────────
+function renderReport(md) {
     const box = document.getElementById("report-output-box");
-    if (!mdText) {
-        box.innerHTML = "";
-        return;
+    if (!md) { box.innerHTML = ""; return; }
+    window.chartQueue = [];
+    box.innerHTML = parseMarkdown(md);
+    if (window.chartQueue && window.chartQueue.length > 0) {
+        window.chartQueue.forEach(item => {
+            const ctx = document.getElementById(item.id);
+            if (ctx) {
+                try {
+                    new Chart(ctx, JSON.parse(item.config));
+                } catch(e) { console.error("Chart JSON parse error:", e); }
+            }
+        });
+        window.chartQueue = [];
     }
-    
-    const lines = mdText.split(/\r?\n/);
-    const htmlBlocks = [];
-    
-    let inTable = false;
-    let tableRows = [];
-    
-    let inList = false;
-    let listItems = [];
-    
+}
+
+function parseMarkdown(md) {
+    const lines  = md.split(/\r?\n/);
+    const blocks = [];
+    let inTable  = false, tableRows = [];
+    let inList   = false, listItems = [];
+    let inCode   = false, codeBuf   = [], codeType = "";
+
     function flushTable() {
-        if (tableRows.length === 0) return;
-        
-        let tableHtml = '<div class="table-wrapper"><table>';
-        
-        // Determine if we have a table divider row (e.g. |---|---| or | :--- | ---: |)
-        let hasDivider = false;
-        if (tableRows.length > 1) {
-            const secondRow = tableRows[1];
-            hasDivider = secondRow.every(cell => /^[-\s:]+$/.test(cell) && cell.includes('-'));
+        if (!tableRows.length) return;
+        let h = '<table>';
+        const isDivider = (r) => r.every(c => /^[-:\s]+$/.test(c));
+        if (tableRows.length > 1 && isDivider(tableRows[1])) {
+            h += '<thead><tr>' + tableRows[0].map(c => `<th>${inlineMarkdown(c)}</th>`).join('') + '</tr></thead>';
+            h += '<tbody>' + tableRows.slice(2).map(r =>
+                '<tr>' + r.map(c => `<td>${inlineMarkdown(c)}</td>`).join('') + '</tr>').join('') + '</tbody>';
+        } else {
+            h += '<tbody>' + tableRows.map(r =>
+                '<tr>' + r.map(c => `<td>${inlineMarkdown(c)}</td>`).join('') + '</tr>').join('') + '</tbody>';
         }
-        
-        let startIndex = 0;
-        if (hasDivider) {
-            // Compile first row as header elements
-            tableHtml += '<thead><tr>';
-            for (let cell of tableRows[0]) {
-                tableHtml += `<th>${parseInlineMarkdown(cell)}</th>`;
-            }
-            tableHtml += '</tr></thead>';
-            startIndex = 2; // Skip header row and formatting separator row
-        }
-        
-        tableHtml += '<tbody>';
-        for (let i = startIndex; i < tableRows.length; i++) {
-            tableHtml += '<tr>';
-            for (let cell of tableRows[i]) {
-                tableHtml += `<td>${parseInlineMarkdown(cell)}</td>`;
-            }
-            tableHtml += '</tr>';
-        }
-        tableHtml += '</tbody></table></div>';
-        
-        htmlBlocks.push(tableHtml);
-        tableRows = [];
-        inTable = false;
+        h += '</table>';
+        blocks.push(h);
+        tableRows = []; inTable = false;
     }
-    
     function flushList() {
-        if (listItems.length === 0) return;
-        let listHtml = '<ul>';
-        for (let item of listItems) {
-            listHtml += `<li>${parseInlineMarkdown(item)}</li>`;
-        }
-        listHtml += '</ul>';
-        htmlBlocks.push(listHtml);
-        listItems = [];
-        inList = false;
+        if (!listItems.length) return;
+        blocks.push('<ul>' + listItems.map(i => `<li>${inlineMarkdown(i)}</li>`).join('') + '</ul>');
+        listItems = []; inList = false;
     }
-    
-    for (let line of lines) {
-        const trimmed = line.trim();
-        
-        // 1. Table Row Check
-        if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+    function flushCode() {
+        if (!codeBuf.length) return;
+        if (codeType === "json chart") {
+            const chartId = "chart-" + Math.random().toString(36).substr(2, 9);
+            blocks.push(`<canvas id="${chartId}"></canvas>`);
+            window.chartQueue = window.chartQueue || [];
+            window.chartQueue.push({ id: chartId, config: codeBuf.join('\n') });
+        } else {
+            blocks.push(`<pre><code>${escHtml(codeBuf.join('\n'))}</code></pre>`);
+        }
+        codeBuf = []; inCode = false; codeType = "";
+    }
+
+    for (const line of lines) {
+        const t = line.trim();
+
+        // Code fence
+        if (t.startsWith("```")) {
+            if (inCode) { flushCode(); }
+            else        { if (inTable) flushTable(); if (inList) flushList(); inCode = true; codeType = t.slice(3).trim(); }
+            continue;
+        }
+        if (inCode) { codeBuf.push(line); continue; }
+
+        // HR
+        if (/^---+$/.test(t)) {
+            if (inTable) flushTable(); if (inList) flushList();
+            blocks.push('<hr>'); continue;
+        }
+
+        // Table row
+        if (t.startsWith("|") && t.endsWith("|")) {
             if (inList) flushList();
             inTable = true;
-            // Slice the bounding pipes and map individual cells
-            const cells = line.split("|").slice(1, -1).map(c => c.trim());
-            tableRows.push(cells);
+            tableRows.push(t.slice(1,-1).split("|").map(c => c.trim()));
             continue;
-        } else if (inTable) {
-            flushTable();
-        }
-        
-        // 2. Unordered List Check
-        if (trimmed.startsWith("- ")) {
+        } else if (inTable) flushTable();
+
+        // List item
+        if (/^[-*] /.test(t)) {
             if (inTable) flushTable();
             inList = true;
-            listItems.push(trimmed.substring(2).trim());
+            listItems.push(t.slice(2));
             continue;
-        } else if (inList) {
-            flushList();
+        } else if (inList) flushList();
+
+        // Blank line
+        if (!t) continue;
+
+        // Alert blocks: > [!TYPE]
+        const alertMatch = t.match(/^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]/i);
+        if (alertMatch) {
+            const typeMap = { NOTE:"info", TIP:"tip", IMPORTANT:"info", WARNING:"warning", CAUTION:"caution" };
+            const cls = typeMap[alertMatch[1].toUpperCase()] || "info";
+            blocks.push(`<blockquote class="${cls}">`); continue;
         }
-        
-        // 3. Blank/Empty Spacer lines
-        if (trimmed === "") {
-            continue;
+        if (t.startsWith(">")) {
+            blocks.push(`<blockquote>${inlineMarkdown(t.slice(1).trim())}</blockquote>`); continue;
         }
-        
-        // 4. Heading Blocks
-        if (trimmed.startsWith("# ")) {
-            htmlBlocks.push(`<h1>${parseInlineMarkdown(trimmed.substring(2).trim())}</h1>`);
-            continue;
-        }
-        if (trimmed.startsWith("## ")) {
-            htmlBlocks.push(`<h2>${parseInlineMarkdown(trimmed.substring(3).trim())}</h2>`);
-            continue;
-        }
-        if (trimmed.startsWith("### ")) {
-            htmlBlocks.push(`<h3>${parseInlineMarkdown(trimmed.substring(4).trim())}</h3>`);
-            continue;
-        }
-        
-        // 5. APA Bibliography Definition Check: [^index]: content
-        const bibMatch = trimmed.match(/^\[\^(\d+)\]:\s*(.*)$/);
-        if (bibMatch) {
-            const index = bibMatch[1];
-            const content = bibMatch[2];
-            htmlBlocks.push(`<div id="cite-${index}" class="bibliography-item"><a href="#cite-link-${index}" class="backlink" title="Jump back to source citation"><sup class="citation-sup">[${index}]</sup></a> ${parseInlineMarkdown(content)}</div>`);
+
+        // Headings
+        if      (t.startsWith("# "))   { blocks.push(`<h1>${inlineMarkdown(t.slice(2))}</h1>`); continue; }
+        else if (t.startsWith("## "))  { blocks.push(`<h2>${inlineMarkdown(t.slice(3))}</h2>`); continue; }
+        else if (t.startsWith("### ")) { blocks.push(`<h3>${inlineMarkdown(t.slice(4))}</h3>`); continue; }
+
+        // Bibliography [^n]: ...
+        const bib = t.match(/^\[\^(\d+)\]:\s*(.*)/);
+        if (bib) {
+            blocks.push(`<div class="bib-item" id="bib-${bib[1]}">
+                <sup class="bib-num">[${bib[1]}]</sup> ${inlineMarkdown(bib[2])}</div>`);
             continue;
         }
-        
-        // 6. Generic Paragraph wrapping fallback
-        htmlBlocks.push(`<p>${parseInlineMarkdown(trimmed)}</p>`);
+
+        // Regular paragraph
+        blocks.push(`<p>${inlineMarkdown(t)}</p>`);
     }
-    
-    // Flush remaining components
+
     if (inTable) flushTable();
-    if (inList) flushList();
-    
-    box.innerHTML = htmlBlocks.join("\n");
+    if (inList)  flushList();
+    if (inCode)  flushCode();
+
+    return blocks.join("\n");
 }
 
-// Helper function to wrap SVG text to prevent clashing
-function wrapSvgText(textElement, text, x, y, maxChars = 16) {
-    const words = text.split(' ');
-    let line = '';
-    let lines = [];
-    
-    for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' ';
-        if (testLine.length > maxChars && n > 0) {
-            lines.push(line.trim());
-            line = words[n] + ' ';
-        } else {
-            line = testLine;
-        }
-    }
-    lines.push(line.trim());
-    
-    // Clear original content
-    textElement.textContent = '';
-    
-    // Position lines so that the bottom of the text block aligns exactly to y (no overlaps with circle)
-    const lineHeight = 12; // px
-    const totalHeight = lines.length * lineHeight;
-    const startY = y - totalHeight + lineHeight;
-    
-    lines.forEach((lineText, index) => {
-        const tspan = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-        tspan.setAttribute("x", x);
-        tspan.setAttribute("y", startY + (index * lineHeight));
-        tspan.textContent = lineText;
-        textElement.appendChild(tspan);
-    });
+function inlineMarkdown(text) {
+    return text
+        .replace(/\*\*(.*?)\*\*/g,       '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g,           '<em>$1</em>')
+        .replace(/`([^`]+)`/g,           '<code>$1</code>')
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+        .replace(/\[\^(\d+)\](?!:)/g,    '<sup><a href="#bib-$1">[$1]</a></sup>');
 }
 
-// Plots Directed Acyclic Graph (DAG) task nodes onto dynamic SVG canvas
-function plotSvgGraph(tasks, activeAgent) {
-    const svg = document.getElementById("svg-graph");
-    svg.innerHTML = ""; // Clear active canvas
+// ─── PLOT SVG GRAPH ──────────────────────────────────────────────
+function plotGraph(tasks, activeAgent) {
+    const svg      = document.getElementById("svg-graph");
+    svg.innerHTML  = "";
 
     const taskList = Object.values(tasks);
     if (taskList.length === 0) return;
 
-    // Emojis representing active subagent roles
-    const emojiMap = {
-        'planner': '🧭',
-        'researcher': '🕵️',
-        'analyzer': '🧮',
-        'critic': '⚖️',
-        'intent_analyzer': '🤖'
+    const emojiMap = { researcher:"🔍", analyzer:"📊", critic:"⚖️", planner:"🗺️", intent_analyzer:"🤖", synthesizer:"📝" };
+
+    // Layer by dependency depth
+    const layers = {};
+    taskList.forEach(t => {
+        const depth = (function d(id) {
+            const node = tasks[id];
+            if (!node || !node.dependencies?.length) return 0;
+            return 1 + Math.max(...node.dependencies.map(d));
+        })(t.id);
+        (layers[depth] = layers[depth] || []).push(t);
+    });
+
+    const keys        = Object.keys(layers).sort((a,b) => a-b);
+    const W           = svg.getBoundingClientRect().width || 760;
+    const H           = parseInt(svg.getAttribute("height")) || 420;
+    const marginX     = 90;
+    const availW      = W - 2 * marginX;
+    const stepX       = keys.length > 1 ? availW / (keys.length - 1) : 0;
+    const coords      = {};
+
+    keys.forEach((k, li) => {
+        const col   = layers[k];
+        const cx    = marginX + li * stepX;
+        col.forEach((t, ri) => {
+            const cy = (H / (col.length + 1)) * (ri + 1);
+            coords[t.id] = { x: cx, y: cy };
+        });
+    });
+
+    // Draw arrows
+    taskList.forEach(t => {
+        const tgt = coords[t.id];
+        (t.dependencies || []).forEach(dep => {
+            const src = coords[dep];
+            if (!src || !tgt) return;
+            const dx = tgt.x - src.x, dy = tgt.y - src.y;
+            const dist = Math.hypot(dx, dy) || 1;
+            const r    = 26;
+            const ln   = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            ln.setAttribute("x1", src.x + r*dx/dist);
+            ln.setAttribute("y1", src.y + r*dy/dist);
+            ln.setAttribute("x2", tgt.x - r*dx/dist);
+            ln.setAttribute("y2", tgt.y - r*dy/dist);
+            ln.setAttribute("stroke", t.status === "failed" ? "#ef4444" : "#6366f1");
+            ln.setAttribute("stroke-width", "1.5");
+            ln.setAttribute("stroke-dasharray", t.status === "pending" ? "5,3" : "none");
+            ln.setAttribute("marker-end", `url(#${t.status==="failed"?"arrow-fail":"arrow"})`);
+            ln.setAttribute("opacity", "0.6");
+            svg.appendChild(ln);
+        });
+    });
+
+    // Draw nodes
+    taskList.forEach(t => {
+        const c = coords[t.id];
+        if (!c) return;
+
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        // Glow for running
+        if (t.status === "running") {
+            const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            glow.setAttribute("cx", c.x); glow.setAttribute("cy", c.y); glow.setAttribute("r", 36);
+            glow.setAttribute("fill", "rgba(99,102,241,0.15)");
+            glow.setAttribute("class", "node-glow");
+            g.appendChild(glow);
+        }
+
+        const colorMap = { pending:"#1e2235", running:"#312e81", completed:"#064e3b", failed:"#450a0a" };
+        const strokeMap = { pending:"rgba(255,255,255,0.1)", running:"#6366f1", completed:"#10b981", failed:"#ef4444" };
+
+        const circ = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circ.setAttribute("cx", c.x); circ.setAttribute("cy", c.y); circ.setAttribute("r", 26);
+        circ.setAttribute("fill", colorMap[t.status] || "#1e2235");
+        circ.setAttribute("stroke", strokeMap[t.status] || "rgba(255,255,255,0.1)");
+        circ.setAttribute("stroke-width", "2");
+        g.appendChild(circ);
+
+        const em = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        em.setAttribute("x", c.x); em.setAttribute("y", c.y + 6);
+        em.setAttribute("text-anchor", "middle"); em.setAttribute("font-size", "16");
+        em.textContent = emojiMap[t.assigned_agent] || "⚙️";
+        g.appendChild(em);
+
+        // Title label above
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("x", c.x); label.setAttribute("y", c.y - 34);
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("font-size", "11"); label.setAttribute("font-family", "Inter");
+        label.setAttribute("fill", "rgba(226,232,240,0.85)");
+        const words = (t.title || "").split(" "); let line = "";
+        words.slice(0, 4).forEach((w, i) => {
+            const tsp = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+            tsp.setAttribute("x", c.x); tsp.setAttribute("dy", i === 0 ? 0 : 13);
+            tsp.textContent = w;
+            label.appendChild(tsp);
+        });
+        g.appendChild(label);
+
+        // Agent below
+        const agentLbl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        agentLbl.setAttribute("x", c.x); agentLbl.setAttribute("y", c.y + 40);
+        agentLbl.setAttribute("text-anchor", "middle");
+        agentLbl.setAttribute("font-size", "9"); agentLbl.setAttribute("font-family", "JetBrains Mono, monospace");
+        agentLbl.setAttribute("fill", strokeMap[t.status] || "rgba(255,255,255,0.3)");
+        agentLbl.textContent = (t.assigned_agent || "").toUpperCase();
+        g.appendChild(agentLbl);
+
+        svg.appendChild(g);
+    });
+}
+
+// ─── TIMELINE WATERFALL ──────────────────────────────────────────
+function plotTimeline(traces) {
+    const box = document.getElementById("timeline-waterfall-box");
+    if (!traces.length) {
+        box.innerHTML = `<div class="report-empty" style="height:200px">
+            <i class="fa-solid fa-chart-gantt"></i>
+            <p>Run a query to see timing breakdown</p></div>`;
+        return;
+    }
+
+    box.innerHTML = "";
+    const sorted   = [...traces].sort((a,b) => (a.start_time||0) - (b.start_time||0));
+    const minStart = sorted[0].start_time || 0;
+    const maxEnd   = Math.max(...sorted.map(s => (s.start_time||0) + (s.duration_sec||0)));
+    const total    = maxEnd - minStart || 1;
+    const agentColors = {
+        researcher:"#10b981", analyzer:"#f59e0b", critic:"#ef4444",
+        synthesizer:"#6366f1", planner:"#8b5cf6", intent_analyzer:"#3b82f6"
     };
 
-    // 1. Group tasks by hierarchical columns/layers using dependency counting
-    const layers = {};
-    const taskCoords = {};
-
-    // Topological horizontal separation layers mapping
-    taskList.forEach(task => {
-        let depth = 0;
-        // Count dependencies recursively
-        const countDepth = (tId) => {
-            const t = tasks[tId];
-            if (!t || !t.dependencies || t.dependencies.length === 0) return 0;
-            return 1 + Math.max(...t.dependencies.map(countDepth));
-        };
-        depth = countDepth(task.id);
-        
-        if (!layers[depth]) layers[depth] = [];
-        layers[depth].push(task);
-    });
-
-    const layerKeys = Object.keys(layers).sort((a,b) => a-b);
-    const canvasWidth = svg.clientWidth || 600;
-    const canvasHeight = svg.clientHeight || 450;
-
-    // Use a clean, margins-aware layer distribution
-    const marginX = 80;
-    const availableWidth = canvasWidth - 2 * marginX;
-    const layerWidth = layerKeys.length > 1 ? availableWidth / (layerKeys.length - 1) : availableWidth;
-
-    // 2. Programmatically calculate Cartesian coordinates
-    layerKeys.forEach((layerKey, lIndex) => {
-        const layerTasks = layers[layerKey];
-        const cx = layerKeys.length > 1 ? marginX + lIndex * layerWidth : marginX + availableWidth / 2;
-        
-        const totalRows = layerTasks.length;
-        const rowHeight = canvasHeight / (totalRows + 1);
-
-        layerTasks.forEach((task, rIndex) => {
-            const cy = rowHeight * (rIndex + 1);
-            taskCoords[task.id] = { x: cx, y: cy };
-        });
-    });
-
-    // 3. Draw Connecting Edge Arrows (truncated to circle boundary)
-    taskList.forEach(task => {
-        const target = taskCoords[task.id];
-        task.dependencies.forEach(depId => {
-            const source = taskCoords[depId];
-            if (source && target) {
-                const dx = target.x - source.x;
-                const dy = target.y - source.y;
-                const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-                
-                const r = 24; // Node Circle Radius
-                // Offset start/end coordinate values by circle radius to stop exactly at boundaries
-                const x1 = source.x + (r * dx) / dist;
-                const y1 = source.y + (r * dy) / dist;
-                const x2 = target.x - (r * dx) / dist;
-                const y2 = target.y - (r * dy) / dist;
-
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", x1);
-                line.setAttribute("y1", y1);
-                line.setAttribute("x2", x2);
-                line.setAttribute("y2", y2);
-                
-                // Color code line state
-                line.setAttribute("class", `edge-line edge-${task.status}`);
-                if (task.status === "running") {
-                    line.setAttribute("stroke", "#4f46e5");
-                }
-                
-                line.setAttribute("marker-end", task.status === "failed" ? "url(#arrow-failed)" : "url(#arrow)");
-                svg.appendChild(line);
-            }
-        });
-    });
-
-    // 4. Draw Interactive Glow Circles & Node Labels
-    taskList.forEach(task => {
-        const coord = taskCoords[task.id];
-        if (!coord) return;
-
-        const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        group.setAttribute("class", "node-group");
-        
-        // Dynamic pulsators for active nodes
-        if (task.status === "running" || (activeAgent === task.assigned_agent && task.status === "running")) {
-            const glow = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-            glow.setAttribute("cx", coord.x);
-            glow.setAttribute("cy", coord.y);
-            glow.setAttribute("r", 30);
-            glow.setAttribute("class", "node-glow");
-            glow.setAttribute("fill", "#8b5cf6");
-            glow.setAttribute("opacity", 0.4);
-            group.appendChild(glow);
-        }
-
-        // Central circle representing task entity
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", coord.x);
-        circle.setAttribute("cy", coord.y);
-        circle.setAttribute("r", 24);
-        circle.setAttribute("class", `node-circle node-${task.status}`);
-        group.appendChild(circle);
-
-        // Draw subagent emoji inside circle
-        const agentName = (task.assigned_agent || '').toLowerCase();
-        const emoji = emojiMap[agentName] || '🤖';
-        const emojiText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        emojiText.setAttribute("x", coord.x);
-        emojiText.setAttribute("y", coord.y + 5);
-        emojiText.setAttribute("class", "node-emoji");
-        emojiText.setAttribute("text-anchor", "middle");
-        emojiText.setAttribute("font-size", "16px");
-        emojiText.textContent = emoji;
-        group.appendChild(emojiText);
-
-        // Task label text (wrapped to prevent clashing)
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", coord.x);
-        text.setAttribute("class", "node-text");
-        wrapSvgText(text, task.title, coord.x, coord.y - 32);
-        group.appendChild(text);
-
-        // Agent badge label text (shifted lower)
-        const agentText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        agentText.setAttribute("x", coord.x);
-        agentText.setAttribute("y", coord.y + 36);
-        agentText.setAttribute("class", "node-agent-text");
-        agentText.textContent = task.assigned_agent.toUpperCase();
-        group.appendChild(agentText);
-
-        svg.appendChild(group);
-    });
-}
-
-// Renders the waterfall Gantt timelines
-function plotLatencyWaterfall(traces) {
-    const container = document.getElementById("timeline-waterfall-box");
-    if (traces.length === 0) {
-        container.innerHTML = `<div class="empty-list-placeholder">No trace timings parsed yet.</div>`;
-        return;
-    }
-
-    container.innerHTML = "";
-    
-    // Sort spans by start times
-    const sorted = [...traces].sort((a,b) => a.start_time - b.start_time);
-    
-    const minStart = sorted[0].start_time;
-    const maxEnd = Math.max(...sorted.map(s => s.start_time + s.duration_sec));
-    const totalDuration = maxEnd - minStart || 1.0;
-
     sorted.forEach(span => {
-        const leftPercent = ((span.start_time - minStart) / totalDuration) * 100;
-        const widthPercent = (span.duration_sec / totalDuration) * 100;
-
-        const row = document.createElement("div");
+        const left  = (((span.start_time||0) - minStart) / total * 100).toFixed(1);
+        const width = Math.max((span.duration_sec||0) / total * 100, 2).toFixed(1);
+        const color = agentColors[span.agent] || "#6366f1";
+        const row   = document.createElement("div");
         row.className = "gantt-row";
         row.innerHTML = `
-            <div class="gantt-label">
-                <span>${span.name} (${span.agent})</span>
-                <span>${span.duration_sec.toFixed(2)}s</span>
-            </div>
+            <div class="gantt-label" title="${span.name || span.agent}">${span.name || span.agent} <span style="color:#64748b;font-size:9px">${(span.duration_sec||0).toFixed(2)}s</span></div>
             <div class="gantt-track">
-                <div class="gantt-bar gantt-bar-${span.agent}" style="left: ${leftPercent}%; width: ${Math.max(widthPercent, 2)}%"></div>
-            </div>
-        `;
-        container.appendChild(row);
+                <div class="gantt-bar" style="left:${left}%;width:${width}%;background:${color};opacity:0.85">
+                    <span style="font-size:9px;color:#fff;padding-left:4px">${(span.duration_sec||0).toFixed(2)}s</span>
+                </div>
+            </div>`;
+        box.appendChild(row);
     });
 }
 
-// Render real-time scrolling thought logs
-function renderReasoningLogs(logs) {
-    const terminal = document.getElementById("terminal-thought-stream");
-    terminal.innerHTML = ""; // Redraw sequentially to match indices
-
-    logs.forEach(log => {
-        const row = document.createElement("div");
-        row.className = `log-entry log-${log.type}`;
-        
-        // Format relative timestamp
-        const timeStr = new Date(log.timestamp * 1000).toTimeString().split(' ')[0].substring(3);
-        
-        row.innerHTML = `
-            <div class="log-header" style="display:flex; justify-content:space-between;">
-                <span class="log-badge ${log.agent}-badge">${log.agent.toUpperCase()}</span>
-                <span class="log-time">[${timeStr}]</span>
-            </div>
-            <div class="log-text">${log.message}</div>
-        `;
-        terminal.appendChild(row);
-    });
-    
-    // Keep scrolled downwards
-    terminal.scrollTop = terminal.scrollHeight;
-}
-
-// System logging fallbacks
-function loggerSystemMessage(msg) {
-    const terminal = document.getElementById("terminal-thought-stream");
-    const row = document.createElement("div");
-    row.className = `log-entry log-info`;
-    row.innerHTML = `
-        <div class="log-header">
-            <span class="log-badge system-badge">SYSTEM</span>
-        </div>
-        <div class="log-text">${msg}</div>
-    `;
-    terminal.appendChild(row);
-    terminal.scrollTop = terminal.scrollHeight;
-}
-
-// File Upload Handler (ingests docs to vector store)
-async function handleFileUpload(file) {
-    if (!file) return;
-    
-    const statusBox = document.getElementById("upload-status");
-    statusBox.innerText = `Parsing ${file.name}...`;
-    statusBox.style.color = "#8b5cf6";
-
-    const formData = new FormData();
-    formData.append("file", file);
-    
-    const apiKey = document.getElementById("api-key-input").value.trim();
-    if (apiKey) {
-        formData.append("api_key", apiKey);
-    }
-
+// ─── LOAD SESSION HISTORY ────────────────────────────────────────
+async function loadSessionHistory() {
+    const list = document.getElementById("session-history-list");
     try {
-        const response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData
+        const res     = await fetch("/api/sessions");
+        const data    = await res.json();
+        const sessions = (data.sessions || []).slice(0, 10);
+        if (!sessions.length) { list.innerHTML = `<div class="history-empty">No sessions yet</div>`; return; }
+        list.innerHTML = "";
+        sessions.forEach(s => {
+            const item = document.createElement("div");
+            item.className = "history-item";
+            const statusClass = s.status === "completed" ? "hist-status-completed" :
+                                s.status === "failed"    ? "hist-status-failed"    : "hist-status-running";
+            item.innerHTML = `
+                <span class="history-item-status ${statusClass}"></span>
+                <span class="history-item-query" title="${escHtml(s.query)}">${escHtml(s.query)}</span>
+                <button class="btn-delete" title="Delete session">
+                    <i class="fa-solid fa-trash"></i>
+                </button>`;
+            
+            // Click item to load archived report
+            item.addEventListener("click", () => loadArchivedReport(s.session_id));
+            
+            // Delete button click logic
+            const delBtn = item.querySelector(".btn-delete");
+            delBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                deleteSession(s.session_id, item);
+            });
+            
+            list.appendChild(item);
         });
-        const data = await response.json();
-        
-        if (data.success) {
-            statusBox.innerText = `Successfully indexed: ${file.name}`;
-            statusBox.style.color = "#10b981";
-            loggerSystemMessage(`Ingested semantic asset: ${file.name}`);
-        } else {
-            statusBox.innerText = `Upload failed: ${data.detail}`;
-            statusBox.style.color = "#ef4444";
-        }
-    } catch (e) {
-        statusBox.innerText = `Connection failed: ${e}`;
-        statusBox.style.color = "#ef4444";
-    }
+    } catch(e) { console.error("History load error:", e); }
 }
 
-// Download markdown strategic report locally
+// ─── LOAD ARCHIVED REPORT ────────────────────────────────────────
+async function loadArchivedReport(sessionId) {
+    try {
+        const res = await fetch(`/api/report/${sessionId}`);
+        if (!res.ok) { alert("Report not found."); return; }
+        const data = await res.json();
+        activeSessionId = sessionId;
+        currentReportMd = data.report || data.content || "";
+        renderReport(currentReportMd);
+        switchTab("report-tab");
+        const meta = document.getElementById("report-meta");
+        if (meta) meta.textContent = `Archived · Confidence: ${(data.confidence_score||0).toFixed(2)} · ${sessionId.slice(0,8)}`;
+    } catch(e) { alert(`Could not load report: ${e}`); }
+}
+
+// ─── DOWNLOAD REPORT ─────────────────────────────────────────────
 function downloadReport() {
-    if (!currentReportMd) {
-        alert("No synthesized strategic report exists to download.");
-        return;
-    }
+    if (!currentReportMd) { alert("No report to download."); return; }
     const blob = new Blob([currentReportMd], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `neuroweave_strategic_report_${activeSessionId || 'session'}.md`;
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `neuroweave_report_${(activeSessionId||"").slice(0,8)}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
 }
 
-// Pulls historical sessions compiled from server SQLite storage
-async function loadSessionHistory() {
-    const list = document.getElementById("session-history-list");
+// ─── FILE UPLOAD ─────────────────────────────────────────────────
+async function handleFileUpload(file) {
+    if (!file) return;
+    const statusEl = document.getElementById("upload-status");
+    statusEl.textContent = `Uploading ${file.name}...`;
+    const fd = new FormData();
+    fd.append("file", file);
     try {
-        const res = await fetch("/api/sessions");
+        const res  = await fetch("/api/upload", { method: "POST", body: fd });
         const data = await res.json();
-        const sessions = data.sessions || [];
-        
-        if (sessions.length === 0) {
-            list.innerHTML = `<div class="empty-list-placeholder">No historical strategic report compiled yet.</div>`;
+        if (data.success) {
+            statusEl.textContent = `✓ Indexed: ${file.name}`;
+            statusEl.style.color = "#10b981";
+        } else {
+            statusEl.textContent = `✗ Failed: ${data.detail}`;
+            statusEl.style.color = "#ef4444";
+        }
+    } catch(e) {
+        statusEl.textContent = `✗ Error: ${e}`;
+        statusEl.style.color = "#ef4444";
+    }
+}
+
+// ─── EXPORT TO PDF ───────────────────────────────────────────────
+function exportToPDF() {
+    if (typeof html2pdf !== 'undefined') {
+        html2pdf().from(document.getElementById('report-output-box')).save('NeuroWeave_Report.pdf');
+    } else {
+        alert("html2pdf library is missing.");
+    }
+}
+
+// ─── WEB SPEECH API ──────────────────────────────────────────────
+document.addEventListener("click", (e) => {
+    const micBtn = e.target.closest("#mic-btn");
+    if (micBtn) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert("Web Speech API not supported in this browser.");
             return;
         }
 
-        list.innerHTML = "";
-        sessions.forEach(sess => {
-            const item = document.createElement("div");
-            item.className = "history-item";
-            item.innerHTML = `
-                <span class="history-query" title="${sess.query}">${sess.query}</span>
-                <span class="badge ${sess.status === 'completed' ? 'badge-analyzer' : 'badge-system'}">${sess.status}</span>
-            `;
-            // Bind click to load report archive
-            item.addEventListener("click", () => loadReportArchive(sess.session_id));
-            list.appendChild(item);
-        });
-    } catch (e) {
-        console.error("Error loading histories: ", e);
-    }
-}
-
-// Reloads a completed historical report from SQLite to the UI
-async function loadReportArchive(sessionId) {
-    try {
-        const res = await fetch(`/api/report/${sessionId}`);
-        if (res.status === 200) {
-            const data = await res.json();
-            activeSessionId = sessionId;
-            currentReportMd = data.content;
-            renderReportMarkdown(data.content);
-            
-            // Switch tabs
-            switchTab("report-tab");
-            
-            // Clear SVGs or timers since this represents static history
-            document.getElementById("svg-graph").innerHTML = `
-                <div class="report-placeholder">
-                    <h3>Displaying archived static query session</h3>
-                    <p>ID: ${sessionId}</p>
-                </div>
-            `;
-            document.getElementById("session-badge").innerText = "ARCHIVED";
-            loggerSystemMessage(`Loaded archived report session: ${sessionId}`);
+        if (isSpeechRecording) {
+            if (speechRecognitionInstance) {
+                speechRecognitionInstance.stop();
+            }
+            micBtn.classList.remove("recording");
+            micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+            isSpeechRecording = false;
         } else {
-            alert("Could not load report details.");
+            speechRecognitionInstance = new SpeechRecognition();
+            speechRecognitionInstance.continuous = false;
+            speechRecognitionInstance.interimResults = false;
+            
+            speechRecognitionInstance.onstart = () => {
+                micBtn.classList.add("recording");
+                micBtn.innerHTML = '<i class="fa-solid fa-stop"></i>';
+                isSpeechRecording = true;
+            };
+            
+            speechRecognitionInstance.onresult = (event) => {
+                const queryInput = document.getElementById("query-input");
+                if (queryInput) {
+                    queryInput.value = event.results[0][0].transcript;
+                }
+            };
+            
+            speechRecognitionInstance.onend = () => {
+                micBtn.classList.remove("recording");
+                micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+                isSpeechRecording = false;
+            };
+            
+            speechRecognitionInstance.onerror = (err) => {
+                console.error("Speech recognition error:", err);
+                micBtn.classList.remove("recording");
+                micBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+                isSpeechRecording = false;
+            };
+            
+            speechRecognitionInstance.start();
         }
-    } catch (e) {
-        alert(`Error reloading history: ${e}`);
+    }
+});
+
+// ─── REMOVED REDUNDANT FETCH HISTORY ─────────────────────────────
+
+async function deleteSession(id, element) {
+    try {
+        const res = await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            element.remove();
+        } else {
+            console.error("Failed to delete session");
+        }
+    } catch(e) {
+        console.error("deleteSession error:", e);
     }
 }
 
-// Applies quick-action templates in the sidebar
-function applyTemplate(type) {
-    const input = document.getElementById("query-input");
-    if (!input) return;
-
-    let queryText = "";
-    if (type === "startups") {
-        queryText = "Build me a market analysis for AI automation startups in India";
-    } else if (type === "finance") {
-        queryText = "Calculate capitalization models for Series A valuation seed rounds";
-    } else if (type === "replan") {
-        queryText = "Force critic replanning test to evaluate DAG expansion recovery";
+// ─── INGEST URL ──────────────────────────────────────────────────
+async function ingestUrl(url) {
+    try {
+        const res = await fetch('/api/ingest-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url })
+        });
+        return await res.json();
+    } catch(e) {
+        console.error("ingestUrl error:", e);
     }
-
-    input.value = queryText;
-    loggerSystemMessage(`Applied quick research template: "${queryText}"`);
-    initiateOrchestration();
 }
-
