@@ -83,3 +83,5 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 scratch/
+tests/
+scripts/legacy_audits/
