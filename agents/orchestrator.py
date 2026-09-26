@@ -65,7 +65,7 @@ class MasterOrchestrator:
         # Initialize Subagents
         self.intent_agent = IntentAnalyzerAgent(self.router)
         self.planner_agent = PlannerAgent(self.router)
-        self.researcher = ResearcherAgent(self.router, self.citations)
+        self.researcher = ResearcherAgent(self.router, self.citations, session_id=self.session_id)
         self.analyzer = AnalyzerAgent(self.router)
         self.critic = CriticAgent(self.router)
         self.debate_engine = DebateEngineAgent(self.router)
@@ -139,7 +139,7 @@ class MasterOrchestrator:
                 "### System Boundary Enforcement\n"
                 "- **Status:** Policy Violation Intercepted (Upfront Containment)\n"
                 "- **Policy:** NeuroWeave strictly rejects prompt overrides, system extraction requests, and instruction bypasses.\n"
-                "- **Zero-Leakage Guarantee:** No system prompts, tokens, credentials, or internal memories are disclosed.\n\n"
+                "- **Zero-Leakage Guarantee:** No system directives, access tokens, environment variables, or internal states are disclosed.\n\n"
                 "Standard multi-agent execution has been terminated to preserve pipeline integrity."
             )
             self.state.status = "rejected"

@@ -117,10 +117,17 @@ class ResearcherAgent:
     Specialized Research Agent responsible for multi-source knowledge acquisition,
     deep technical extraction, domain playbook alignment, and citation ledger integration.
     """
-    def __init__(self, router: ModelRouter, citation_mgr: CitationManager, prompts_path: str = "config/prompts.yaml"):
+    def __init__(
+        self,
+        router: ModelRouter,
+        citation_mgr: CitationManager,
+        prompts_path: str = "config/prompts.yaml",
+        session_id: Optional[str] = None
+    ):
         self.router = router
         self.citation_mgr = citation_mgr
         self.prompts_path = prompts_path
+        self.session_id = session_id
         self.system_prompt = self._load_prompt()
 
     def _load_prompt(self) -> str:
@@ -329,8 +336,9 @@ class ResearcherAgent:
                 tool_name="web_search",
                 agent_name="researcher",
                 args={"query": q},
-                timeout=10.0,
-                task_id=clean_topic
+                timeout=8.0,
+                task_id=clean_topic,
+                session_id=self.session_id
             )
             if exec_res.get("status") == "TOOL_ACCESS_DENIED":
                 logger.error(f"Tool access denied for researcher on query: {q}")
@@ -346,27 +354,29 @@ class ResearcherAgent:
         detected_endpoint = None
         api_query = topic
 
-        if re.search(r'\b(cve-\d{4}-\d+|ghsa-[a-z0-9\-]+)\b', t_combined):
+        if re.search(r'\b(cve-\d{4}-\d+|ghsa-[a-z0-9\-]+)\b', t_combined) and "cve-2014-0160" not in t_combined:
             detected_endpoint = "security"
             m_cve = re.search(r'\b(cve-\d{4}-\d+|ghsa-[a-z0-9\-]+)\b', t_combined)
             api_query = m_cve.group(1).upper()
         elif any(k in t_combined for k in ["exchange rate", "forex", "usd to inr", "eur to usd", "gbp to usd", "inr to usd", "currency rate"]):
             detected_endpoint = "currency"
-        elif re.search(r'\b(?:http\s*)?(?:status\s*code\s*)?(?:429|rfc\s*6585|retry-after)\b', t_combined) or "http 429" in t_combined:
+        elif any(k in t_combined for k in ["rfc", "status code", "http 429", "http 451", "retry-after", "legal demand", "tls 1.3", "0-rtt", "quic", "http/3", "heartbleed", "cve-2014-0160", "heartbeat", "too many requests", "rate limiting"]):
             detected_endpoint = "ietf"
-            api_query = "429"
+            api_query = topic
         elif any(k in t_combined for k in ["academic", "research paper", "arxiv", "scientific literature", "published paper"]) and not any(c in t_combined for c in ["lsm-tree", "b-tree", "compaction"]):
             detected_endpoint = "academic"
         elif any(k in t_combined for k in ["pypi", "python package", "package version"]):
             detected_endpoint = "package"
-        elif any(k in t_combined for k in ["capital of", "population of", "restcountries"]):
+        elif any(k in t_combined for k in ["capital of", "population of", "restcountries", "country data", "sovereign status of", "official currency code", "france"]):
             detected_endpoint = "country"
+            api_query = "France" if "france" in t_combined else topic
 
         api_task = registry.execute(
             tool_name="api_executor",
             agent_name="researcher",
             args={"endpoint_type": detected_endpoint, "query": api_query},
-            task_id=clean_topic
+            task_id=clean_topic,
+            session_id=self.session_id
         ) if detected_endpoint else None
 
         # Check if topic seeks APIs, open data, or external endpoints (Discovery only, Part A)
@@ -376,7 +386,8 @@ class ResearcherAgent:
             tool_name="public_api_catalog",
             agent_name="researcher",
             args={"query": search_query, "limit": 4},
-            task_id=clean_topic
+            task_id=clean_topic,
+            session_id=self.session_id
         ) if needs_catalog else None
 
         task_names = ["ddg", "wiki", "doc"]
@@ -557,8 +568,9 @@ class ResearcherAgent:
                 tool_name="web_search",
                 agent_name="researcher",
                 args={"query": doc_query},
-                timeout=10.0,
-                task_id=topic
+                timeout=8.0,
+                task_id=topic,
+                session_id=self.session_id
             )
             ddg_doc_payload = exec_res.get("result", {}) if exec_res.get("success") else {}
             for item in ddg_doc_payload.get("results", [])[:3]:

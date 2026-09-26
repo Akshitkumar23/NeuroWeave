@@ -66,7 +66,7 @@ async def search_duckduckgo_lite(query: str, client: httpx.AsyncClient) -> List[
     }
     
     try:
-        response = await client.post(url, data={"q": query, "kl": "wt-wt"}, headers=headers, timeout=6.0)
+        response = await client.post(url, data={"q": query, "kl": "wt-wt"}, headers=headers, timeout=1.5)
         if response.status_code == 200 and "anomaly" not in response.text:
             html_text = response.text
             
@@ -129,7 +129,7 @@ async def search_duckduckgo_html(query: str, client: httpx.AsyncClient) -> List[
     }
     
     try:
-        response = await client.post(url, data={"q": query}, headers=headers, timeout=6.0)
+        response = await client.post(url, data={"q": query}, headers=headers, timeout=1.5)
         if response.status_code == 200 and "anomaly" not in response.text:
             html_text = response.text
             
@@ -259,7 +259,7 @@ async def search_developer_web(query: str, client: httpx.AsyncClient) -> List[Di
     try:
         hn_url = "https://hn.algolia.com/api/v1/search"
         params = {"query": query, "tags": "(story,comment)", "hitsPerPage": 4}
-        r = await client.get(hn_url, params=params, timeout=5.0)
+        r = await client.get(hn_url, params=params, timeout=2.5)
         if r.status_code == 200:
             data = r.json()
             for hit in data.get("hits", [])[:3]:
@@ -288,7 +288,7 @@ async def search_developer_web(query: str, client: httpx.AsyncClient) -> List[Di
     except Exception as e:
         logger.debug(f"Developer index search error for '{query}': {e}")
         
-    # 2. DuckDuckGo Instant Answer API
+    # 2. DuckDuckGo Instant Answer API (Fast failover: 1.2s timeout)
     try:
         ddg_api_url = "https://api.duckduckgo.com/"
         ddg_params = {
@@ -298,7 +298,7 @@ async def search_developer_web(query: str, client: httpx.AsyncClient) -> List[Di
             "no_html": "1",
             "skip_disambig": "0"
         }
-        r_api = await client.get(ddg_api_url, params=ddg_params, timeout=5.0)
+        r_api = await client.get(ddg_api_url, params=ddg_params, timeout=1.2)
         if r_api.status_code == 200:
             data = r_api.json()
             abstract = _clean_snippet(data.get("AbstractText", ""))
@@ -336,6 +336,8 @@ async def search_developer_web(query: str, client: httpx.AsyncClient) -> List[Di
                         })
     except Exception as e:
         logger.debug(f"DDG instant answer error for '{query}': {e}")
+
+    return results
 
 async def search_ietf_standards(query: str, client: Optional[httpx.AsyncClient] = None) -> List[Dict[str, Any]]:
     """
@@ -445,6 +447,7 @@ async def search_stackexchange(query: str, client: Optional[httpx.AsyncClient] =
 async def search_openalex(query: str, client: Optional[httpx.AsyncClient] = None) -> List[Dict[str, Any]]:
     """
     Tier 1: OpenAlex Scholarly Database for peer-reviewed Computer Science & Systems research.
+    Gracefully falls back to Crossref API when OpenAlex is rate-limited (HTTP 429).
     """
     results: List[Dict[str, Any]] = []
     words = [w for w in re.findall(r'[a-zA-Z0-9]+', query) if len(w) > 3 and w.lower() not in ["what", "which", "where", "explain", "does", "compare"]]
@@ -462,27 +465,62 @@ async def search_openalex(query: str, client: Optional[httpx.AsyncClient] = None
         should_close = True
 
     try:
-        res = await client.get(url, params=params, headers=headers, timeout=5.0)
-        if res.status_code == 200:
-            works = res.json().get("results", [])
-            for work in works:
-                title = _clean_snippet(work.get("title", ""))
-                doi = work.get("doi") or work.get("id") or ""
-                year = work.get("publication_year", "")
-                cited_by = work.get("cited_by_count", 0)
-                snip = f"{title} (Published: {year}, Citations: {cited_by}). Primary computer science research."
-                if doi and SecurityGuardrails.is_url_safe(doi) and title:
-                    results.append({
-                        "title": f"{title} (Scholarly Research {year})",
-                        "url": doi,
-                        "snippet": snip,
-                        "source": "openalex_research",
-                        "source_type": "LIVE_EXTERNAL",
-                        "source_tier": "Tier 1 (Authoritative / Standards)",
-                        "credibility": 0.98
-                    })
-    except Exception as e:
-        logger.debug(f"OpenAlex search error for '{query}': {e}")
+        try:
+            res = await client.get(url, params=params, headers=headers, timeout=4.0)
+            if res.status_code == 200:
+                works = res.json().get("results", [])
+                for work in works:
+                    title = _clean_snippet(work.get("title", ""))
+                    doi = work.get("doi") or work.get("id") or ""
+                    year = work.get("publication_year", "")
+                    cited_by = work.get("cited_by_count", 0)
+                    snip = f"{title} (Published: {year}, Citations: {cited_by}). Primary computer science research."
+                    if doi and SecurityGuardrails.is_url_safe(doi) and title:
+                        results.append({
+                            "title": f"{title} (Scholarly Research {year})",
+                            "url": doi,
+                            "snippet": snip,
+                            "source": "openalex_research",
+                            "source_type": "LIVE_EXTERNAL",
+                            "source_tier": "Tier 1 (Authoritative / Standards)",
+                            "credibility": 0.98
+                        })
+        except Exception as e:
+            logger.debug(f"OpenAlex search error for '{query}': {e}")
+
+        # Fallback to Crossref if OpenAlex is rate-limited (429) or returned 0 items
+        if not results:
+            try:
+                cf_url = "https://api.crossref.org/works"
+                cf_params = {"query": oa_query, "rows": 3}
+                cf_res = await client.get(cf_url, params=cf_params, headers=headers, timeout=4.0)
+                if cf_res.status_code == 200:
+                    items = cf_res.json().get("message", {}).get("items", [])
+                    for item in items:
+                        title_list = item.get("title", [])
+                        title = _clean_snippet(title_list[0] if title_list else "Scholarly Research")
+                        doi_val = item.get("DOI", "")
+                        if not doi_val:
+                            continue
+                        doi = f"https://doi.org/{doi_val}" if not doi_val.startswith("http") else doi_val
+                        issued = item.get("issued", {}).get("date-parts", [[None]])
+                        year = issued[0][0] if (issued and issued[0] and issued[0][0]) else "2023"
+                        snip = f"{title} (Published: {year}). Scholarly peer-reviewed research."
+                        if doi and SecurityGuardrails.is_url_safe(doi) and title:
+                            results.append({
+                                "title": f"{title} (Scholarly Research {year})",
+                                "url": doi,
+                                "snippet": snip,
+                                "source": "openalex_research",
+                                "source_type": "LIVE_EXTERNAL",
+                                "source_tier": "Tier 1 (Authoritative / Standards)",
+                                "credibility": 0.98
+                            })
+            except Exception as e:
+                logger.debug(f"Crossref fallback error for '{query}': {e}")
+    finally:
+        if should_close:
+            await client.aclose()
     return results
 
 @registry.register_tool(

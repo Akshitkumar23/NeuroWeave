@@ -57,20 +57,20 @@ class SecurityGuardrails:
             (r"(ignore\s+(?:all\s+)?(?:previous\s+)?instructions)", "Direct Instruction Override"),
             (r"(system\s+(?:prompt\s+)?override)", "System Prompt Override"),
             (r"(\[system_override\]|<system_override>|###\s*system\s*override)", "Delimiter Injection"),
-            (r"(reveal|output|print|leak|show|dump)\s+(?:all\s+)?(?:internal\s+)?(?:system\s+)?(?:prompts?|instructions?|passwords?|keys?|admin\s+secrets?)", "Credential / Prompt Extraction"),
-            (r"(secret\s+admin\s+passwords?|admin\s+passwords?)", "Secret Extraction Attempt"),
+            (r"(ignore\s+(?:all\s+)?(?:safety\s+|security\s+)?(?:restrictions?|guardrails?|policies?|controls?|rules?|instructions?))", "Safety Directive Bypass"),
+            (r"(reveal|output|print|leak|show|dump|get)\s+(?:all\s+)?(?:the\s+|your\s+|any\s+|raw\s+|system\s+|database\s+|internal\s+|stored\s+)*.*?(passwords?|credentials?|secrets?|(?:api[\s_]?|private\s+|secret\s+|encryption\s+|master\s+)?keys?|connection\s+string|config(?:uration)?(?:\s+file)?)", "System Asset Extraction Attempt"),
+            (r"(secret\s+admin\s+passwords?|admin\s+passwords?)", "Privileged Data Extraction Attempt"),
             (r"(you\s+are\s+now\s+freed|you\s+are\s+now\s+dan|jailbreak)", "Jailbreak / Persona Hijack"),
-            (r"(act\s+as\s+an\s+unrestricted\s+ai|bypass\s+(?:all\s+)?guardrails)", "Safety Bypass Directive"),
+            (r"(act\s+as\s+an\s+unrestricted\s+ai|bypass\s+(?:all\s+)?guardrails)", "Safety Directive Bypass"),
             (r"(under\s+no\s+circumstances\s+follow)", "Negative Constraint Injection"),
             (r"(<script.*?>.*?</script>)", "XSS Payload Injection"),
             (r"(drop\s+table\b|;\s*--)", "SQL Injection Vector"),
             # Phase 6.4 Fix #6: Credential exfiltration patterns (compound-verb attacks)
-            (r"(extract\s+and\s+(?:dump|export|list|output|reveal|show)).*?(passwords?|credentials?|secrets?|(?:api[\s_]?|private\s+)?keys?)", "Credential Exfiltration — Compound Verb"),
-            (r"(list\s+all\s+(?:credentials?|secrets?|passwords?|(?:api[\s_]?|private\s+)?keys?))", "Credential Enumeration Attack"),
+            (r"(extract\s+and\s+(?:dump|export|list|output|reveal|show)).*?(passwords?|credentials?|secrets?|(?:api[\s_]?|private\s+)?keys?)", "Extraction Directive — Compound Verb"),
+            (r"(list\s+all\s+(?:credentials?|secrets?|passwords?|(?:api[\s_]?|private\s+)?keys?))", "Asset Enumeration Attempt"),
             (r"(export\s+all\s+(?:(?:private|customer|user|internal|confidential|sensitive)\s+){1,3}(?:data|records?|information|files?))", "Data Exfiltration Attack"),
-            (r"(ignore\s+security\s+(?:restrictions?|guardrails?|policies?|controls?|rules?))", "Security Restriction Bypass"),
-            (r"(dump\s+(?:all\s+)?(?:internal\s+)?(?:database\s+)?passwords?)", "Password Dump Attack"),
-            (r"(reveal\s+(?:all\s+)?stored\s+(?:credentials?|passwords?|secrets?|keys?))", "Stored Credential Extraction"),
+            (r"(dump\s+(?:all\s+)?(?:internal\s+)?(?:database\s+)?passwords?)", "Database Extraction Attempt"),
+            (r"(reveal\s+(?:all\s+)?stored\s+(?:credentials?|passwords?|secrets?|keys?))", "Stored Data Extraction Attempt"),
         ]
         
         for pattern, reason in extended_patterns:
