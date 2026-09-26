@@ -3,39 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeuroWeave — Autonomous AI Research Engine</title>
+    <title>NeuroWeave — Multi-Agent Intelligence Engine</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css?v=8">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="styles.css?v=18">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
-<body>
-    <!-- Ambient background glows -->
-    <div class="bg-glow glow-1"></div>
-    <div class="bg-glow glow-2"></div>
-    <div class="bg-glow glow-3"></div>
+<body class="dark-theme">
+    <!-- Ambient subtle background glows -->
+    <div class="bg-mesh">
+        <div class="bg-glow glow-1"></div>
+        <div class="bg-glow glow-2"></div>
+    </div>
 
-    <!-- ── LOGS SIDEBAR (slides in from right on click) ── -->
+    <!-- ── LOGS DRAWER (Slides in from right) ── -->
     <div id="logs-overlay" class="logs-overlay" onclick="toggleLogs()"></div>
-    <aside id="logs-sidebar" class="logs-sidebar">
+    <aside id="logs-sidebar" class="logs-sidebar glass-panel">
         <div class="logs-sidebar-header">
             <div class="logs-title">
-                <i class="fa-solid fa-terminal"></i>
-                <span>Agent Live Logs</span>
+                <i class="fa-solid fa-terminal text-accent"></i>
+                <span>Execution Logs</span>
                 <span class="logs-badge" id="log-count-badge">0</span>
             </div>
             <div class="logs-header-right">
-                <div class="conf-pill">
-                    <span>Confidence</span>
+                <div class="conf-pill" title="Fact Confidence">
+                    <span class="conf-label">Confidence</span>
                     <div class="conf-bar-bg">
                         <div id="confidence-bar" class="conf-bar-fill" style="width:0%"></div>
                     </div>
                     <span id="confidence-value" class="conf-val">0.00</span>
                 </div>
-                <button class="logs-close-btn" onclick="toggleLogs()">
+                <button class="logs-close-btn" onclick="toggleLogs()" title="Close Stream">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -43,154 +44,413 @@
         <div class="log-stream" id="terminal-thought-stream">
             <div class="log-entry log-system">
                 <span class="log-badge badge-system">SYSTEM</span>
-                <span class="log-time">[00:00]</span>
-                <span class="log-text">NeuroWeave initialized. Awaiting query input.</span>
+                <span class="log-time">[00:00:00]</span>
+                <span class="log-text">Engine ready. Enter a research objective to begin execution.</span>
             </div>
         </div>
     </aside>
 
-    <!-- ── MAIN APP ── -->
+    <!-- ── MAIN APP SHELL ── -->
     <div class="app-shell">
 
-        <!-- TOP NAV BAR -->
-        <header class="topbar">
+        <!-- TOP BAR -->
+        <header class="topbar glass-nav">
             <div class="topbar-left">
                 <div class="brand">
-                    <div class="brand-icon">
-                        <i class="fa-solid fa-network-wired"></i>
+                    <div class="brand-icon-wrapper">
+                        <i class="fa-solid fa-network-wired brand-icon"></i>
                     </div>
                     <div class="brand-text">
                         <span class="brand-name">NeuroWeave</span>
+                        <span class="brand-badge">PRO</span>
                     </div>
                 </div>
             </div>
+
+            <!-- Division Selector Pills -->
             <div class="topbar-center">
-                <div id="status-pill" class="status-pill status-idle">
-                    <span class="status-dot"></span>
-                    <span id="status-text">IDLE — Ready for Research</span>
+                <div class="division-selector-bar" id="division-selector">
+                    <button class="div-pill active" data-div="auto" onclick="setDivision('auto')">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Auto
+                    </button>
+                    <button class="div-pill" data-div="marketing" onclick="setDivision('marketing')">
+                        <i class="fa-solid fa-rocket"></i> Marketing
+                    </button>
+                    <button class="div-pill" data-div="finance" onclick="setDivision('finance')">
+                        <i class="fa-solid fa-coins"></i> Finance
+                    </button>
+                    <button class="div-pill" data-div="product" onclick="setDivision('product')">
+                        <i class="fa-solid fa-box-open"></i> Product
+                    </button>
+                    <button class="div-pill" data-div="engineering" onclick="setDivision('engineering')">
+                        <i class="fa-solid fa-cubes"></i> Architecture
+                    </button>
+                    <button class="div-pill" data-div="security" onclick="setDivision('security')">
+                        <i class="fa-solid fa-shield-halved"></i> Security
+                    </button>
+                    <button class="div-pill" data-div="research" onclick="setDivision('research')">
+                        <i class="fa-solid fa-microscope"></i> Research
+                    </button>
                 </div>
             </div>
+
             <div class="topbar-right">
+                <div id="status-pill" class="status-pill status-idle">
+                    <span class="status-dot"></span>
+                    <span id="status-text">Ready</span>
+                </div>
                 <span id="api-mode-badge" class="api-badge api-sim">
-                    <i class="fa-solid fa-circle-info"></i> Simulation Mode
+                    <i class="fa-solid fa-bolt"></i> NEUROWEAVE MODE: ZERO-API
                 </span>
-                <!-- Logs toggle button -->
-                <button class="logs-toggle-btn" onclick="toggleLogs()" title="View Agent Logs">
+                <button class="logs-toggle-btn" onclick="toggleLogs()" title="View Execution Stream">
                     <i class="fa-solid fa-terminal"></i>
-                    <span>Agent Logs</span>
+                    <span>Logs</span>
                     <span class="logs-notif" id="logs-notif" style="display:none">●</span>
                 </button>
             </div>
         </header>
 
-        <!-- MAIN CONTENT AREA -->
+        <!-- MAIN LAYOUT -->
         <div class="main-layout">
 
-            <!-- LEFT: CONTROL PANEL -->
-            <aside class="control-panel glass">
+            <!-- LEFT: COMMAND CENTER -->
+            <aside class="control-panel glass-panel">
+                <!-- Research Objective Section -->
                 <div class="cp-section">
-                    <label class="cp-label">
-                        <i class="fa-solid fa-magnifying-glass-chart"></i>
-                        Research Objective
-                    </label>
+                    <div class="cp-section-header">
+                        <label class="cp-label">
+                            <i class="fa-solid fa-sparkles"></i> Research Query
+                        </label>
+                    </div>
                     <div class="textarea-wrapper">
                         <textarea id="query-input" class="cp-textarea" 
-                            placeholder="Type your research objective here..." 
+                            placeholder="Ask anything: product comparison, market research, system architecture, or valuation..." 
                             rows="3"></textarea>
-                        <button id="mic-btn" title="Toggle voice input"><i class="fa-solid fa-microphone"></i></button>
+                        <div class="textarea-actions">
+                            <button id="mic-btn" class="icon-action-btn" title="Voice Input">
+                                <i class="fa-solid fa-microphone"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Starters -->
+                    <div class="quick-prompts-container">
+                        <div class="quick-prompts-list">
+                            <button class="quick-prompt-chip" onclick="setQuery('Top 5 mechanical keyboards under 4000 in India with red vs blue switches, durability rating, and price comparison')">
+                                ⌨️ Keyboards &lt; ₹4k
+                            </button>
+                            <button class="quick-prompt-chip" onclick="setQuery('How to scale B2B SaaS marketing funnel with viral loops and CAC reduction?')">
+                                📈 SaaS Growth
+                            </button>
+                            <button class="quick-prompt-chip" onclick="setQuery('Calculate capitalization models for Series A valuation seed rounds')">
+                                💰 Series A Cap Table
+                            </button>
+                            <button class="quick-prompt-chip" onclick="setQuery('Design high-availability microservices architecture with Redis and Kafka')">
+                                🏗️ Microservices Arch
+                            </button>
+                            <button class="quick-prompt-chip" onclick="setQuery('Run Karpathy AutoResearch experiment loop comparing Muon vs AdamW optimizer on transformer training loss val_bpb and VRAM budgeting')">
+                                🧠 AutoResearch (ML Loop)
+                            </button>
+                            <button class="quick-prompt-chip" onclick="setQuery('Calculate nanoGPT parameter sizing, KV-cache VRAM footprint across batch sizes, and FlashAttention MFU benchmarks')">
+                                ⚡ nanoGPT Architecture
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div class="cp-section">
-                    <label class="cp-label">
-                        <i class="fa-solid fa-key"></i>
-                        API Credentials
-                        <button class="cp-toggle" onclick="toggleSection('creds-body')">
-                            <i class="fa-solid fa-chevron-down" id="creds-arrow"></i>
-                        </button>
-                    </label>
-                    <div id="creds-body" class="cp-collapsible">
-                        <select id="provider-select" class="cp-select" onchange="handleProviderChange()">
-                            <option value="gemini">Google Gemini (Recommended)</option>
-                            <option value="openai">OpenAI GPT-4</option>
-                            <option value="groq">Groq LLaMA (Fast)</option>
-                            <option value="ollama">Ollama (Local LLM)</option>
-                        </select>
-                        <input type="password" id="api-key-input" class="cp-input" 
-                            placeholder="Enter API key">
-                        <button class="btn-save" onclick="saveApiKey()">
-                            <i class="fa-solid fa-floppy-disk"></i> Save Key
-                        </button>
-                    </div>
-                </div>
-
-                <button id="execute-btn" class="run-btn">
+                <!-- Execute Button -->
+                <button id="execute-btn" class="run-btn" onclick="triggerWorkflow()">
                     <i class="fa-solid fa-bolt"></i>
                     <span>Run Analysis</span>
+                    <kbd class="kbd-hint">Ctrl ↵</kbd>
                 </button>
 
                 <div class="cp-divider"></div>
 
-                <div class="cp-section">
-                    <label class="cp-label">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        Recent Sessions
-                    </label>
-                    <div id="session-history-list" class="history-list">
-                        <div class="history-empty">No sessions yet</div>
+                <!-- Knowledge & URL Ingest Section -->
+                <div class="cp-section collapsible-section">
+                    <div class="cp-section-header" onclick="toggleSection('upload-body')">
+                        <label class="cp-label">
+                            <i class="fa-solid fa-folder-open"></i> Context &amp; URLs
+                        </label>
+                        <i class="fa-solid fa-chevron-down toggle-icon" id="upload-arrow"></i>
+                    </div>
+                    <div id="upload-body" class="cp-collapsible hidden">
+                        <div class="file-drop" id="drop-zone">
+                            <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+                            <span class="drop-text">Drop files (.txt, .md, .json)</span>
+                            <input type="file" id="file-input" class="hidden" accept=".txt,.md,.json">
+                        </div>
+                        <div class="url-ingest-group">
+                            <input type="text" id="url-input" class="cp-input url-input" placeholder="https://example.com/source">
+                            <button class="btn-secondary" onclick="ingestUrlAction()">
+                                <i class="fa-solid fa-link"></i> Add URL
+                            </button>
+                        </div>
+                        <div id="upload-status" class="upload-msg"></div>
                     </div>
                 </div>
 
-
-
-                <!-- File Upload Section -->
+                <!-- Architecture Mode Section -->
                 <div class="cp-section">
-                    <label class="cp-label">
-                        <i class="fa-solid fa-database"></i>
-                        Knowledge Upload
-                        <button class="cp-toggle" onclick="toggleSection('upload-body')">
-                            <i class="fa-solid fa-chevron-down" id="upload-arrow"></i>
+                    <div class="cp-section-header">
+                        <label class="cp-label">
+                            <i class="fa-solid fa-shield-halved"></i> Engine Mode
+                        </label>
+                    </div>
+                    <div style="font-size: 0.78rem; color: #94a3b8; background: rgba(15, 23, 42, 0.6); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); line-height: 1.4;">
+                        <span style="color: #38bdf8; font-weight: 600;">ZERO-API DETERMINISTIC</span><br>
+                        Autonomous multi-agent intelligence operating with zero external LLM dependencies, zero cloud API keys, and pure deterministic epistemic verification.
+                    </div>
+                </div>
+
+                <div class="cp-divider"></div>
+
+                <!-- Session History Section -->
+                <div class="cp-section">
+                    <div class="cp-section-header">
+                        <label class="cp-label">
+                            <i class="fa-solid fa-clock-rotate-left"></i> History
+                        </label>
+                        <button class="icon-text-btn" onclick="loadSessionHistory()" title="Refresh">
+                            <i class="fa-solid fa-arrows-rotate"></i>
                         </button>
-                    </label>
-                    <div id="upload-body" class="cp-collapsible hidden">
-                        <div class="file-drop" id="drop-zone">
-                            <i class="fa-solid fa-cloud-arrow-up"></i>
-                            <span>Drop .txt / .md / .json</span>
-                            <input type="file" id="file-input" class="hidden" accept=".txt,.md,.json">
-                        </div>
-                        <input type="text" id="url-input" placeholder="Paste URL to ingest">
-                        <button onclick="ingestUrl()">Ingest</button>
-                        <div id="upload-status" class="upload-msg"></div>
+                    </div>
+                    <div id="session-history-list" class="history-list">
+                        <div class="history-empty">No previous sessions</div>
                     </div>
                 </div>
             </aside>
 
-            <!-- CENTER: MAIN OUTPUT -->
-            <main class="output-panel">
+            <!-- CENTER & RIGHT: INTELLIGENCE WORKSPACE -->
+            <main class="output-panel glass-panel">
 
-                <!-- TAB BAR -->
-                <div class="tab-bar">
-                    <button class="tab active" onclick="switchTab('graph-tab')" id="tab-btn-graph">
-                        <i class="fa-solid fa-diagram-project"></i> Execution Graph
-                    </button>
-                    <button class="tab" onclick="switchTab('report-tab')" id="tab-btn-report">
-                        <i class="fa-solid fa-file-lines"></i> Strategic Report
-                    </button>
-                    <button class="tab" onclick="switchTab('timeline-tab')" id="tab-btn-timeline">
-                        <i class="fa-solid fa-chart-gantt"></i> Timeline
-                    </button>
+                <!-- 1. EXECUTIVE RESEARCH JOURNEY STEPPER -->
+                <div class="stepper-container" id="executive-stepper">
+                    <div class="stepper-track">
+                        <div class="stepper-step" id="step-query" data-step="1">
+                            <div class="step-circle"><i class="fa-solid fa-terminal"></i></div>
+                            <span class="step-name">Query</span>
+                        </div>
+                        <div class="step-connector" id="conn-1"></div>
+                        <div class="stepper-step" id="step-understanding" data-step="2">
+                            <div class="step-circle"><i class="fa-solid fa-brain"></i></div>
+                            <span class="step-name">Understanding</span>
+                        </div>
+                        <div class="step-connector" id="conn-2"></div>
+                        <div class="stepper-step" id="step-pod" data-step="3">
+                            <div class="step-circle"><i class="fa-solid fa-users-gear"></i></div>
+                            <span class="step-name">Agency Pod</span>
+                        </div>
+                        <div class="step-connector" id="conn-3"></div>
+                        <div class="stepper-step" id="step-research" data-step="4">
+                            <div class="step-circle"><i class="fa-solid fa-magnifying-glass"></i></div>
+                            <span class="step-name">Research</span>
+                        </div>
+                        <div class="step-connector" id="conn-4"></div>
+                        <div class="stepper-step" id="step-analysis" data-step="5">
+                            <div class="step-circle"><i class="fa-solid fa-chart-simple"></i></div>
+                            <span class="step-name">Analysis</span>
+                        </div>
+                        <div class="step-connector" id="conn-5"></div>
+                        <div class="stepper-step" id="step-critic" data-step="6">
+                            <div class="step-circle"><i class="fa-solid fa-shield-check"></i></div>
+                            <span class="step-name">Critic</span>
+                        </div>
+                        <div class="step-connector" id="conn-6"></div>
+                        <div class="stepper-step" id="step-debate" data-step="7">
+                            <div class="step-circle"><i class="fa-solid fa-scale-balanced"></i></div>
+                            <span class="step-name">Debate</span>
+                        </div>
+                        <div class="step-connector" id="conn-7"></div>
+                        <div class="stepper-step" id="step-gate" data-step="8">
+                            <div class="step-circle"><i class="fa-solid fa-door-open"></i></div>
+                            <span class="step-name">Quality Gate</span>
+                        </div>
+                        <div class="step-connector" id="conn-8"></div>
+                        <div class="stepper-step" id="step-dossier" data-step="9">
+                            <div class="step-circle"><i class="fa-solid fa-file-shield"></i></div>
+                            <span class="step-name">Final Dossier</span>
+                        </div>
+                    </div>
+                    <div class="stepper-status-line">
+                        <span class="stepper-live-dot" id="stepper-live-dot"></span>
+                        <span id="stepper-status-msg">System initialized. Ready for research query.</span>
+                    </div>
                 </div>
 
-                <!-- TAB 1: GRAPH -->
-                <div id="graph-tab" class="tab-pane active">
-                    <div class="graph-container">
-                        <div class="graph-legend">
-                            <span class="legend-dot dot-pending"></span><span>Pending</span>
-                            <span class="legend-dot dot-running pulse-dot"></span><span>Running</span>
-                            <span class="legend-dot dot-done"></span><span>Done</span>
-                            <span class="legend-dot dot-fail"></span><span>Failed</span>
+                <!-- 2. LIVE AGENCY POD VISUALIZER -->
+                <div class="pod-visualizer-container" id="pod-visualizer" style="display:none;">
+                    <div class="pod-header">
+                        <div class="pod-header-title">
+                            <i class="fa-solid fa-building-shield text-accent"></i>
+                            <span id="pod-division-label">Agency Division: Architecture</span>
                         </div>
-                        <svg id="svg-graph" width="100%" height="420">
+                        <div class="pod-mode-tag" id="pod-report-mode-tag">MODE: TECHNICAL</div>
+                    </div>
+                    <div class="pod-cards-grid">
+                        <div class="pod-card pod-card-lead">
+                            <div class="pod-card-badge">LEAD SPECIALIST</div>
+                            <div class="pod-card-header">
+                                <div class="pod-avatar" id="pod-lead-avatar">🏛️</div>
+                                <div>
+                                    <h5 id="pod-lead-name">Lead Architect</h5>
+                                    <span class="pod-role" id="pod-lead-role">Principal Systems Specialist</span>
+                                </div>
+                            </div>
+                            <div class="pod-tools-row" id="pod-lead-tools">
+                                <span class="tool-tag"><i class="fa-solid fa-wrench"></i> web_search</span>
+                                <span class="tool-tag"><i class="fa-solid fa-code"></i> python_sandbox</span>
+                            </div>
+                            <p class="pod-directive" id="pod-lead-directive">Harmonizing end-to-end architectural directives and performance benchmarks.</p>
+                        </div>
+
+                        <div class="pod-card pod-card-sup">
+                            <div class="pod-card-badge sup-badge">SUPPORTING SPECIALIST 1</div>
+                            <div class="pod-card-header">
+                                <div class="pod-avatar" id="pod-sup1-avatar">⚙️</div>
+                                <div>
+                                    <h5 id="pod-sup1-name">Domain Specialist</h5>
+                                    <span class="pod-role" id="pod-sup1-role">Technical Specialist</span>
+                                </div>
+                            </div>
+                            <div class="pod-tools-row" id="pod-sup1-tools">
+                                <span class="tool-tag"><i class="fa-solid fa-wrench"></i> domain_analyzer</span>
+                            </div>
+                            <p class="pod-directive" id="pod-sup1-contrib">Evaluating distributed data pipeline resilience and failover topologies.</p>
+                        </div>
+
+                        <div class="pod-card pod-card-sup">
+                            <div class="pod-card-badge sup-badge">SUPPORTING SPECIALIST 2</div>
+                            <div class="pod-card-header">
+                                <div class="pod-avatar" id="pod-sup2-avatar">🔍</div>
+                                <div>
+                                    <h5 id="pod-sup2-name">Operational Auditor</h5>
+                                    <span class="pod-role" id="pod-sup2-role">Risk &amp; Performance Auditor</span>
+                                </div>
+                            </div>
+                            <div class="pod-tools-row" id="pod-sup2-tools">
+                                <span class="tool-tag"><i class="fa-solid fa-calculator"></i> python_sandbox</span>
+                            </div>
+                            <p class="pod-directive" id="pod-sup2-contrib">Conducting quantile latency calculations and verification audits.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WORKSPACE TAB BAR -->
+                <div class="workspace-header">
+                    <div class="tab-bar">
+                        <button class="tab active" onclick="switchTab('report-tab')" id="tab-btn-report">
+                            <i class="fa-solid fa-file-lines"></i>
+                            <span>Report</span>
+                            <span class="tab-badge" id="report-badge">Ready</span>
+                        </button>
+                        <button class="tab" onclick="switchTab('evidence-tab')" id="tab-btn-evidence">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            <span>Evidence Inspector</span>
+                            <span class="tab-badge" id="evidence-badge">0</span>
+                        </button>
+                        <button class="tab" onclick="switchTab('graph-tab')" id="tab-btn-graph">
+                            <i class="fa-solid fa-diagram-project"></i>
+                            <span>Execution DAG</span>
+                        </button>
+                        <button class="tab" onclick="switchTab('timeline-tab')" id="tab-btn-timeline">
+                            <i class="fa-solid fa-chart-gantt"></i>
+                            <span>Telemetry</span>
+                        </button>
+                    </div>
+
+                    <!-- Report Actions Toolbar -->
+                    <div class="report-actions-toolbar" id="report-actions">
+                        <button class="action-btn" onclick="copyReportMarkdown()" title="Copy Markdown">
+                            <i class="fa-solid fa-copy"></i> <span>Copy</span>
+                        </button>
+                        <button class="action-btn" onclick="exportToPDF()" title="Export PDF">
+                            <i class="fa-solid fa-file-pdf"></i> <span>PDF</span>
+                        </button>
+                        <button class="action-btn" onclick="downloadReport()" title="Download Markdown">
+                            <i class="fa-solid fa-download"></i> <span>Save .md</span>
+                        </button>
+                        <button class="action-btn" onclick="exportEvidenceJSON()" title="Export Evidence JSON">
+                            <i class="fa-solid fa-shield-halved"></i> <span>Evidence JSON</span>
+                        </button>
+                        <button class="action-btn" onclick="exportFlowJSON()" title="Export Langflow-inspired Schema">
+                            <i class="fa-solid fa-diagram-next"></i> <span>Flow Schema</span>
+                        </button>
+                        <button class="action-btn" onclick="exportSessionJSON()" title="Export Full Session JSON">
+                            <i class="fa-solid fa-box-archive"></i> <span>Session JSON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ACTIVE SKILLS & SPECIALIST BAR -->
+                <div id="active-skills-bar" class="active-skills-bar" style="display:none;">
+                    <div class="skills-bar-left">
+                        <span class="skills-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Capabilities:</span>
+                        <div id="active-skills-list" class="skills-chips"></div>
+                    </div>
+                </div>
+
+                <!-- TAB 1: STRATEGIC REPORT (Primary) -->
+                <div id="report-tab" class="tab-pane active">
+                    <div class="report-container">
+                        <div class="report-meta-header" id="report-meta-header" style="display:none;">
+                            <div class="meta-left">
+                                <span class="meta-tag" id="meta-session-id">Session: —</span>
+                                <span class="meta-tag" id="meta-confidence">Confidence: —</span>
+                                <span class="meta-tag" id="meta-persona">Specialist: —</span>
+                            </div>
+                        </div>
+                        <article id="report-output-box" class="report-body">
+                            <div class="report-empty-state">
+                                <div class="empty-icon-box">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                                <h3>Ready for Analysis</h3>
+                                <p>Enter a query or choose a starter on the left to generate real-time market briefs, data matrices, and visual charts.</p>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- TAB 2: EVIDENCE & PROVENANCE INSPECTOR -->
+                <div id="evidence-tab" class="tab-pane hidden">
+                    <div class="evidence-container">
+                        <div class="evidence-header-bar">
+                            <div class="evidence-stats">
+                                <span class="ev-stat-pill ev-stat-verified"><i class="fa-solid fa-circle-check"></i> <strong id="ev-count-verified">0</strong> Supported</span>
+                                <span class="ev-stat-pill ev-stat-partial"><i class="fa-solid fa-circle-exclamation"></i> <strong id="ev-count-partial">0</strong> Bounded</span>
+                                <span class="ev-stat-pill ev-stat-stale"><i class="fa-solid fa-clock-rotate-left"></i> <strong id="ev-count-stale">0</strong> Stale / Hist.</span>
+                                <span class="ev-stat-pill ev-stat-sources"><i class="fa-solid fa-globe"></i> <strong id="ev-count-sources">0</strong> Sources</span>
+                            </div>
+                            <div class="evidence-filters">
+                                <button class="ev-filter-btn active" id="ev-filt-all" onclick="filterEvidence('all')">All</button>
+                                <button class="ev-filter-btn" id="ev-filt-supported" onclick="filterEvidence('supported')">Supported</button>
+                                <button class="ev-filter-btn" id="ev-filt-partial" onclick="filterEvidence('partial')">Partial</button>
+                                <button class="ev-filter-btn" id="ev-filt-stale" onclick="filterEvidence('stale')">Stale / Hist.</button>
+                            </div>
+                        </div>
+                        <div id="evidence-claims-list" class="evidence-claims-list">
+                            <div class="report-empty" style="height:200px">
+                                <i class="fa-solid fa-magnifying-glass-chart"></i>
+                                <p>Execute an inquiry to inspect verified claims and complete 8-link provenance lineage.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: EXECUTION GRAPH (DAG) -->
+                <div id="graph-tab" class="tab-pane hidden">
+                    <div class="graph-container">
+                        <div class="graph-toolbar">
+                            <div class="graph-legend">
+                                <span class="legend-dot dot-pending"></span><span>Queued</span>
+                                <span class="legend-dot dot-running pulse-dot"></span><span>Running</span>
+                                <span class="legend-dot dot-done"></span><span>Completed</span>
+                                <span class="legend-dot dot-fail"></span><span>Failed</span>
+                            </div>
+                        </div>
+                        <svg id="svg-graph" width="100%" height="480">
                             <defs>
                                 <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5"
                                     markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -201,41 +461,52 @@
                                     <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/>
                                 </marker>
                             </defs>
-                            <text x="50%" y="50%" text-anchor="middle" fill="rgba(255,255,255,0.2)" 
-                                font-size="14" font-family="Inter">
-                                Run analysis to see execution graph
+                            <text x="50%" y="50%" text-anchor="middle" fill="rgba(255,255,255,0.25)" 
+                                font-size="13" font-family="'Plus Jakarta Sans', sans-serif">
+                                Run analysis to visualize the execution DAG
                             </text>
                         </svg>
                     </div>
                 </div>
 
-                <!-- TAB 2: REPORT -->
-                <div id="report-tab" class="tab-pane hidden">
-                    <div class="report-toolbar">
-                        <span id="report-meta" class="report-meta"></span>
-                        <button class="btn-dl" onclick="downloadReport()">
-                            <i class="fa-solid fa-download"></i> Save .md
-                        </button>
-                    </div>
-                    <article id="report-output-box" class="report-body">
-                        <div class="report-empty">
-                            <i class="fa-solid fa-file-signature"></i>
-                            <h3>No report yet</h3>
-                            <p>Run an analysis to see the report here.</p>
-                        </div>
-                    </article>
-                </div>
-
-                <!-- TAB 3: TIMELINE -->
+                <!-- TAB 4: TIMELINE & TELEMETRY -->
                 <div id="timeline-tab" class="tab-pane hidden">
                     <div class="timeline-container">
+                        <div class="tel-metrics-grid">
+                            <div class="tel-stat-card">
+                                <span class="tel-stat-label">Total Execution Time</span>
+                                <span class="tel-stat-val" id="tel-val-total-time">0.00s</span>
+                            </div>
+                            <div class="tel-stat-card">
+                                <span class="tel-stat-label">Tasks Executed</span>
+                                <span class="tel-stat-val" id="tel-val-tasks-count">0</span>
+                            </div>
+                            <div class="tel-stat-card">
+                                <span class="tel-stat-label">Sources Scraped</span>
+                                <span class="tel-stat-val" id="tel-val-sources-count">0</span>
+                            </div>
+                            <div class="tel-stat-card">
+                                <span class="tel-stat-label">Sandbox Computations</span>
+                                <span class="tel-stat-val" id="tel-val-sandbox-count">0</span>
+                            </div>
+                            <div class="tel-stat-card">
+                                <span class="tel-stat-label">Replans / Gate Retries</span>
+                                <span class="tel-stat-val" id="tel-val-replans-count">0</span>
+                            </div>
+                            <div class="tel-stat-card">
+                                <span class="tel-stat-label">Execution Engine</span>
+                                <span class="tel-stat-val" style="font-size:13px; color:#38bdf8;">Zero-API Local</span>
+                            </div>
+                        </div>
+
                         <div class="timeline-title">
-                            <i class="fa-solid fa-stopwatch"></i> Subtask Execution Waterfall
+                            <i class="fa-solid fa-stopwatch text-accent"></i>
+                            <span>Task Latency &amp; Execution Telemetry</span>
                         </div>
                         <div id="timeline-waterfall-box" class="gantt-box">
-                            <div class="report-empty" style="height:200px">
+                            <div class="report-empty" style="height:220px">
                                 <i class="fa-solid fa-chart-gantt"></i>
-                                <p>Run a query to view timing breakdown</p>
+                                <p>Execute a workflow to view execution latency telemetry</p>
                             </div>
                         </div>
                     </div>
@@ -243,46 +514,130 @@
             </main>
         </div>
 
-        <!-- BOTTOM STATUS BAR -->
-        <footer class="statusbar">
+        <!-- BOTTOM TELEMETRY STATUS BAR -->
+        <footer class="statusbar glass-nav">
             <div class="sb-item">
-                <i class="fa-solid fa-microchip sb-icon"></i>
-                <span class="sb-label">Model:</span>
+                <i class="fa-solid fa-microchip sb-icon text-accent"></i>
+                <span class="sb-label">Agent:</span>
                 <span id="tel-model" class="sb-val">—</span>
             </div>
             <div class="sb-divider"></div>
             <div class="sb-item">
-                <i class="fa-solid fa-coins sb-icon"></i>
+                <i class="fa-solid fa-user-tie sb-icon text-green"></i>
+                <span class="sb-label">Specialist:</span>
+                <span id="tel-persona" class="sb-val">Auto</span>
+            </div>
+            <div class="sb-divider"></div>
+            <div class="sb-item">
+                <i class="fa-solid fa-arrow-down-long sb-icon"></i>
                 <span class="sb-label">Tokens In:</span>
                 <span id="tel-tokens-in" class="sb-val">0</span>
             </div>
             <div class="sb-divider"></div>
             <div class="sb-item">
-                <i class="fa-solid fa-coins sb-icon"></i>
+                <i class="fa-solid fa-arrow-up-long sb-icon"></i>
                 <span class="sb-label">Tokens Out:</span>
                 <span id="tel-tokens-out" class="sb-val">0</span>
             </div>
             <div class="sb-divider"></div>
             <div class="sb-item">
-                <i class="fa-solid fa-dollar-sign sb-icon"></i>
-                <span class="sb-label">Cost:</span>
+                <i class="fa-solid fa-dollar-sign sb-icon text-amber"></i>
+                <span class="sb-label">Est. Cost:</span>
                 <span id="tel-cost" class="sb-val cost-val">$0.000000</span>
             </div>
             <div class="sb-divider"></div>
             <div class="sb-item">
-                <i class="fa-solid fa-arrow-rotate-left sb-icon"></i>
-                <span class="sb-label">Re-plans:</span>
+                <i class="fa-solid fa-arrows-spin sb-icon text-rose"></i>
+                <span class="sb-label">Replans:</span>
                 <span id="tel-replans" class="sb-val replan-val">0</span>
             </div>
             <div class="sb-divider"></div>
             <div class="sb-item">
-                <i class="fa-solid fa-screwdriver-wrench sb-icon"></i>
+                <i class="fa-solid fa-screwdriver-wrench sb-icon text-indigo"></i>
                 <span class="sb-label">Tools:</span>
                 <span id="tel-tools" class="sb-val">0</span>
             </div>
         </footer>
     </div>
 
-    <script src="app.js?v=8"></script>
+    <!-- OPAL NODE INSPECTOR MODAL -->
+    <div id="opal-inspector-modal" class="opal-inspector-modal hidden" onclick="closeInspectorOnBackdrop(event)">
+        <div class="opal-inspector-card glass-panel" onclick="event.stopPropagation()">
+            <div class="opal-inspector-header">
+                <div class="inspector-header-left">
+                    <span id="insp-agent-icon" class="insp-icon">🔍</span>
+                    <div>
+                        <h4 id="insp-task-title">Task Title</h4>
+                        <div class="insp-badges-row">
+                            <span id="insp-agent-role" class="insp-role">WEB RESEARCHER</span>
+                            <span id="insp-persona-badge" class="insp-persona-badge" style="display:none;">🤖 Specialist</span>
+                            <span id="insp-skill-badge" class="insp-skill-badge" style="display:none;">🎯 Capability</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="inspector-header-right">
+                    <span id="insp-status-badge" class="status-pill status-done">✓ Completed</span>
+                    <button class="icon-action-btn" onclick="closeNodeInspector()" title="Close Inspector (Esc)"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+            <div class="opal-inspector-body">
+                <!-- Subtask Metadata Strip -->
+                <div class="insp-meta-grid">
+                    <div class="insp-meta-item">
+                        <span class="insp-meta-label"><i class="fa-solid fa-hashtag text-accent"></i> Task ID</span>
+                        <span id="insp-task-id" class="insp-meta-val">—</span>
+                    </div>
+                    <div class="insp-meta-item">
+                        <span class="insp-meta-label"><i class="fa-solid fa-stopwatch text-green"></i> Latency</span>
+                        <span id="insp-latency" class="insp-meta-val">—</span>
+                    </div>
+                    <div class="insp-meta-item">
+                        <span class="insp-meta-label"><i class="fa-solid fa-diagram-project text-amber"></i> Dependencies</span>
+                        <span id="insp-deps" class="insp-meta-val">None (Root Step)</span>
+                    </div>
+                    <div class="insp-meta-item">
+                        <span class="insp-meta-label"><i class="fa-solid fa-arrows-rotate text-rose"></i> Retries</span>
+                        <span id="insp-retries" class="insp-meta-val">0 / 3</span>
+                    </div>
+                </div>
+
+                <!-- Subtask Objective / Description -->
+                <div class="insp-section">
+                    <label><i class="fa-solid fa-align-left text-accent"></i> Subtask Description &amp; Objective</label>
+                    <p id="insp-desc"></p>
+                </div>
+
+                <!-- Python Sandbox Code Executed (Analyzer / Sandbox Tasks) -->
+                <div class="insp-section" id="insp-code-section" style="display:none;">
+                    <div class="insp-section-header">
+                        <label><i class="fa-solid fa-code text-indigo"></i> Python Sandbox Code Executed</label>
+                        <button class="icon-text-btn" onclick="copyInspectorCode()" title="Copy Code">
+                            <i class="fa-solid fa-copy"></i> <span id="copy-code-label">Copy</span>
+                        </button>
+                    </div>
+                    <pre id="insp-code" class="code-block-sandboxed"></pre>
+                </div>
+
+                <!-- Calculated Metrics / Key Quantitative Results -->
+                <div class="insp-section" id="insp-metrics-section" style="display:none;">
+                    <label><i class="fa-solid fa-calculator text-green"></i> Quantitative Sandbox Metrics</label>
+                    <div id="insp-metrics-grid" class="insp-metrics-grid"></div>
+                </div>
+
+                <!-- Output Findings & Computations -->
+                <div class="insp-section">
+                    <div class="insp-section-header">
+                        <label><i class="fa-solid fa-terminal text-accent"></i> Output Findings &amp; Computations</label>
+                        <button class="icon-text-btn" onclick="copyInspectorOutput()" title="Copy Findings">
+                            <i class="fa-solid fa-copy"></i> <span id="copy-output-label">Copy</span>
+                        </button>
+                    </div>
+                    <pre id="insp-output"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=18"></script>
 </body>
 </html>

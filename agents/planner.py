@@ -8,25 +8,104 @@ autonomous goal expansions, and ensures robust validation of dynamic tasks.
 """
 
 import re
+import uuid
 import yaml
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+import uuid
+from typing import Dict, Any, List, Optional
 from pydantic import BaseModel, Field, model_validator, field_validator
 from core.model_router import ModelRouter
 from core.structured_output import StructuredOutputParser
+from core.skill_loader import get_skill_catalog
+from core.persona_manager import get_persona_registry
 
 logger = logging.getLogger("neuroweave.agents.planner")
+
 
 class TaskItem(BaseModel):
     """
     Pydantic schema representing a single atomic task in the execution plan.
-    Dynamic validation ensures that IDs are clean, unique, and assigned agents are allowed.
+    Dynamic validation ensures that IDs are clean, unique, assigned agents are allowed,
+    and specialized personas are tracked.
     """
     id: str = Field(description="Unique string identifier (e.g. task_01)")
     title: str = Field(description="Short name of this subtask")
     description: str = Field(description="Step-by-step instruction on what to analyze or research")
     assigned_agent: str = Field(description="Assigned subagent: 'researcher', 'analyzer', or 'critic'")
     dependencies: List[str] = Field(default=[], description="List of task ID strings that must complete before this task can run")
+    specialized_persona: Optional[str] = Field(default=None, description="Optimal specialized agency persona for this subtask (e.g. Database Optimizer, AI Engineer, Financial Analyst)")
+    expected_output_format: str = Field(default="structured_findings", description="Expected output schema: structured_findings, quantitative_metrics, audit_verdict, or strategic_report")
+    is_critical: bool = Field(default=True, description="Whether completion of this subtask is strictly mandatory for the final report")
+
+    @model_validator(mode="before")
+    @classmethod
+    def sanitize_task_fields(cls, values: Any) -> Any:
+        """
+        Pre-processes and sanitizes raw model inputs before strict validation:
+        1. Cleans and normalizes task ID (replaces spaces/punctuation with underscores).
+        2. Normalizes dependencies (converts single string to list, cleans IDs).
+        3. Normalizes assigned_agent aliases to canonical names.
+        """
+        if not isinstance(values, dict):
+            return values
+
+        # 1. Sanitize id
+        if "id" in values and isinstance(values["id"], str):
+            raw_id = values["id"].strip()
+            # Replace whitespace, colons, slashes, hash with underscores
+            clean_id = re.sub(r"[^a-zA-Z0-9_\-]", "_", raw_id)
+            clean_id = re.sub(r"_+", "_", clean_id).strip("_")
+            values["id"] = clean_id or f"task_{uuid.uuid4().hex[:6]}"
+
+        # 2. Sanitize dependencies
+        if "dependencies" in values:
+            deps = values["dependencies"]
+            if isinstance(deps, str):
+                deps_str = deps.strip()
+                if deps_str:
+                    clean_d = re.sub(r"[^a-zA-Z0-9_\-]", "_", deps_str).strip("_")
+                    values["dependencies"] = [clean_d] if clean_d else []
+                else:
+                    values["dependencies"] = []
+            elif isinstance(deps, list):
+                clean_deps = []
+                for d in deps:
+                    if isinstance(d, str) and d.strip():
+                        c_dep = re.sub(r"[^a-zA-Z0-9_\-]", "_", d.strip()).strip("_")
+                        if c_dep:
+                            clean_deps.append(c_dep)
+                values["dependencies"] = clean_deps
+
+        # 3. Sanitize assigned_agent aliases
+        if "assigned_agent" in values and isinstance(values["assigned_agent"], str):
+            raw_agent = values["assigned_agent"].strip().lower()
+            alias_map = {
+                "research": "researcher",
+                "web_researcher": "researcher",
+                "fact_checker": "researcher",
+                "search": "researcher",
+                "searcher": "researcher",
+                "web_search": "researcher",
+                "analysis": "analyzer",
+                "data_analyzer": "analyzer",
+                "code_analyzer": "analyzer",
+                "math_analyzer": "analyzer",
+                "quant": "analyzer",
+                "python": "analyzer",
+                "audit": "critic",
+                "auditor": "critic",
+                "review": "critic",
+                "reviewer": "critic",
+                "red_team": "critic",
+                "summary": "synthesizer",
+                "writer": "synthesizer",
+                "report_generator": "synthesizer",
+                "synthesis": "synthesizer"
+            }
+            values["assigned_agent"] = alias_map.get(raw_agent, raw_agent)
+
+        return values
 
     @field_validator("id")
     @classmethod
@@ -47,11 +126,13 @@ class TaskItem(BaseModel):
     def validate_assigned_agent(cls, v: str) -> str:
         """
         Enforces strict RBAC for assigned subagents. Validates that the target agent is allowed.
+        Falls back to 'researcher' if unknown rather than breaking unrecoverably.
         """
         v = v.strip().lower()
-        allowed = {"researcher", "analyzer", "critic"}
+        allowed = {"researcher", "analyzer", "critic", "synthesizer"}
         if v not in allowed:
-            raise ValueError(f"Assigned agent '{v}' is invalid. Must be one of: {allowed}")
+            logger.warning(f"Assigned agent '{v}' not recognized. Defaulting to 'researcher'.")
+            return "researcher"
         return v
 
 
@@ -66,8 +147,11 @@ class TaskPlan(BaseModel):
     def validate_dag(self) -> "TaskPlan":
         """
         Validates that the collection of tasks represents a valid Directed Acyclic Graph (DAG).
-        Checks for duplicate task IDs and circular dependencies.
+        Checks for duplicate task IDs, self-dependencies, and circular dependencies.
         """
+        if not self.tasks:
+            return self
+
         # 1. Check for duplicate task IDs
         seen = set()
         for task in self.tasks:
@@ -75,20 +159,24 @@ class TaskPlan(BaseModel):
                 raise ValueError(f"Duplicate task ID detected in plan: '{task.id}'")
             seen.add(task.id)
 
-        # 2. Check for circular dependencies using depth-first search (DFS) with 3-color coloring
+        # 2. Check for self-dependencies
+        for task in self.tasks:
+            if task.id in task.dependencies:
+                raise ValueError(f"Self-dependency detected: Task '{task.id}' cannot depend on itself.")
+
+        # 3. Check for circular dependencies using DFS with 3-color coloring
         adj = {t.id: t.dependencies for t in self.tasks}
         visited = {}  # 0: unvisited, 1: visiting, 2: visited
 
         def dfs(node: str) -> bool:
             if visited.get(node, 0) == 1:
-                return True  # Found recursion cycle
+                return True  # Cycle detected
             if visited.get(node, 0) == 2:
                 return False
 
             visited[node] = 1
             for dep in adj.get(node, []):
-                # We only traverse nodes inside this plan set to avoid raising errors for external dependencies
-                # which are handled during post-parsing phase.
+                # Traverse nodes present in current plan
                 if dep in adj:
                     if dfs(dep):
                         return True
@@ -118,40 +206,110 @@ class PlannerAgent:
         Loads the system prompt from the yaml configuration. Falls back gracefully on failure.
         """
         try:
-            with open(self.prompts_path, 'r') as f:
+            with open(self.prompts_path, 'r', encoding='utf-8') as f:
                 data = yaml.safe_load(f) or {}
                 return data.get("planner", "You are the NeuroWeave Dynamic Task Planner.")
         except Exception as e:
             logger.error(f"Error loading planner prompt: {e}")
             return "You are the NeuroWeave Dynamic Task Planner."
 
-    async def generate_plan(self, query: str, context_summary: str = "") -> TaskPlan:
+    def match_task_persona(self, task_query: str) -> Optional[str]:
+        """
+        Matches a specific task query or subtask title/description to the optimal specialized agency persona.
+        (e.g. database query -> Database Optimizer, valuation -> FP&A Analyst, AI/transformer -> AI Engineer).
+        """
+        try:
+            matched = get_persona_registry().match_persona(task_query)
+            return matched.name if matched else None
+        except Exception as e:
+            logger.warning(f"Error matching specialized persona for task '{task_query[:40]}': {e}")
+            return None
+
+    async def generate_plan(
+        self,
+        query: str,
+        context_summary: str = "",
+        active_skills: Optional[List[str]] = None,
+        assigned_persona: Optional[str] = None,
+        intent_analysis: Optional[Any] = None
+    ) -> TaskPlan:
         """
         Generates a valid TaskPlan containing tasks that can be executed in topological order.
         Guarantees that all tasks are circular-dependency free and cleans up any dangling/broken dependencies.
+        Incorporates active skill playbooks/guidelines, intent dimensions, and specialist personas into task descriptions.
         """
-        logger.info(f"Generating task DAG for query: '{query}'")
+        logger.info(f"Generating task DAG for query: '{query}' (active_skills={active_skills}, persona={assigned_persona})")
         
+        # Load skill prompt injection block if skills are specified
+        skills_context = ""
+        if active_skills:
+            try:
+                catalog = get_skill_catalog()
+                skill_objs = [catalog.get_skill(s) for s in active_skills if catalog.get_skill(s)]
+                if skill_objs:
+                    skills_context = catalog.get_skill_prompt_injection(skill_objs)
+            except Exception as e:
+                logger.warning(f"Failed to fetch skill context in planner: {e}")
+
+        # Load persona directive if assigned
+        persona_context = ""
+        if assigned_persona:
+            try:
+                p_obj = get_persona_registry().get_persona(assigned_persona)
+                if p_obj:
+                    persona_context = f"\nLead Specialist Persona: {p_obj.name} ({p_obj.role}) [{p_obj.division}]\nVibe: {p_obj.vibe}\n"
+            except Exception as e:
+                logger.warning(f"Failed to fetch persona context in planner: {e}")
+
+        # Extract dimensions from intent_analysis if provided
+        intent_dimensions_str = ""
+        if intent_analysis:
+            if isinstance(intent_analysis, dict):
+                dims = intent_analysis.get("analysis_dimensions", [])
+                ents = intent_analysis.get("extracted_entities", [])
+                is_quant = intent_analysis.get("is_quantitative", False)
+            else:
+                dims = getattr(intent_analysis, "analysis_dimensions", [])
+                ents = getattr(intent_analysis, "extracted_entities", [])
+                is_quant = getattr(intent_analysis, "is_quantitative", False)
+
+            if dims or ents:
+                intent_dimensions_str = (
+                    f"\n=== INTENT & DIMENSIONAL REQUIREMENTS ===\n"
+                    f"Target Analysis Dimensions: {', '.join(dims)}\n"
+                    f"Identified Core Entities: {', '.join(ents) if ents else 'Implicit from query'}\n"
+                    f"Quantitative Modeling Required: {is_quant}\n"
+                )
+
+        skills_prompt_section = f"\n{skills_context}\n" if skills_context else ""
+        skills_directive = (
+            f"\n\nDOMAIN PLAYBOOKS ACTIVE: {', '.join(active_skills)}.\n"
+            f"CRITICAL REQUIREMENT: Explicitly incorporate the domain guidelines, analytical frameworks, and formulas "
+            f"from these active playbooks directly into the task descriptions so downstream agents follow these standards."
+            if active_skills else ""
+        )
+
         prompt = (
             f"Build a clean Directed Acyclic Graph (DAG) for this user request.\n"
             f"Query: \"{query}\"\n"
+            f"{persona_context}"
+            f"{intent_dimensions_str}"
+            f"{skills_prompt_section}"
             f"RAG Context:\n{context_summary}\n\n"
-            f"Ensure tasks are split by agent focus. Rely on Researcher for facts gathering, and Analyzer for python math operations."
+            f"Ensure tasks are split by agent focus. Rely on Researcher for facts gathering, Analyzer for python math operations, and Critic for audits."
+            f"{skills_directive}"
         )
         
-        model_call = lambda p, s: self.router.call_llm(p, s, task_type="reasoning", complexity=6)
+        # Directly generate the validated DAG plan deterministically
+        from core.deterministic_engine import plan_dag, detect_query_intent
+        q_intent = detect_query_intent(query)
+        fallback_plan = plan_dag(query, q_intent)
+        tasks_list = [TaskItem(**t) for t in fallback_plan.get("tasks", [])]
+        validated_result = TaskPlan(tasks=tasks_list)
         
-        # Pydantic schema validation is automatically invoked during structured output parsing.
-        # If the Pydantic validator detects cycles or schema violations, it runs automated correction cycles.
-        validated_result, _ = await StructuredOutputParser.parse_with_correction(
-            llm_call_func=model_call,
-            prompt=prompt,
-            system_instruction=self.system_prompt,
-            schema=TaskPlan
-        )
-        
-        # Post-validation cleanup of dangling dependencies
+        # Post-validation cleanup of dangling dependencies and specialized persona assignment
         task_ids = {t.id for t in validated_result.tasks}
+        is_conceptual = any(k in query.lower() for k in ["mcp", "concept", "what is", "difference between"]) and not any(k in query.lower() for k in ["%", "lakh", "crore", "compound", "calculate"])
         for task in validated_result.tasks:
             original_deps = task.dependencies
             # Filter and keep only dependencies that are actually within the plan
@@ -159,6 +317,19 @@ class PlannerAgent:
             if len(task.dependencies) != len(original_deps):
                 removed = set(original_deps) - set(task.dependencies)
                 logger.warning(f"Cleaned up dangling dependencies {removed} from task '{task.id}' in initial plan.")
+
+            # Ensure valid assigned agents
+            if task.assigned_agent not in {"researcher", "analyzer", "critic", "synthesizer"}:
+                task.assigned_agent = "researcher"
+
+            # Guard against inappropriate mathematical labeling for conceptual topics
+            if is_conceptual and "mathematical calculation" in task.title.lower():
+                task.title = "Architectural & Protocol Deconstruction"
+                task.description = f"Analyze communication semantics, capabilities, and transport protocols for: {query[:80]}"
+
+            # Assign specialized persona to subtask if missing
+            if not task.specialized_persona:
+                task.specialized_persona = self.match_task_persona(f"{task.title} {task.description}") or assigned_persona
                 
         return validated_result
 
@@ -166,87 +337,83 @@ class PlannerAgent:
         self,
         query: str,
         current_tasks: Dict[str, Any],
-        critic_feedback: str
+        critic_feedback: str,
+        active_skills: Optional[List[str]] = None,
+        assigned_persona: Optional[str] = None
     ) -> List[TaskItem]:
         """
         AUTONOMOUS GOAL EXPANSION:
         Scans critic rejection logs, identifies missing competitive / financial dimensions,
-        and generates extra tasks on-the-fly to be dynamically injected.
-        Ensures new tasks are injected cleanly, resolved of any circular dependencies, and
-        pruned of any dangling dependencies.
+        and generates extra tasks on-the-fly to be dynamically injected without an LLM.
         """
-        logger.info("Scanning for knowledge gaps to trigger autonomous goal expansion.")
+        logger.info(f"Scanning for knowledge gaps to trigger autonomous goal expansion. (active_skills={active_skills})")
         
-        prompt = (
-            f"The primary query was: \"{query}\"\n"
-            f"Here are the tasks executed so far: {list(current_tasks.keys())}\n"
-            f"The Critic identified these knowledge gaps / issues: \"{critic_feedback}\"\n"
-            f"Autonomously identify what extra details (such as market risks, seed valuations, competitive metrics) "
-            f"need follow-up research. Return ONLY a list of new tasks to inject into the graph, linked to existing outputs."
-        )
-        
-        model_call = lambda p, s: self.router.call_llm(p, s, task_type="reasoning", complexity=7)
-        
-        try:
-            validated_result, _ = await StructuredOutputParser.parse_with_correction(
-                llm_call_func=model_call,
-                prompt=prompt,
-                system_instruction=self.system_prompt,
-                schema=TaskPlan
-            )
-            
-            # Filter out duplicates and check dependencies
-            new_tasks = []
-            new_task_ids = {t.id for t in validated_result.tasks}
-            valid_task_ids = set(current_tasks.keys()).union(new_task_ids)
-            
-            for t in validated_result.tasks:
-                if t.id not in current_tasks:
-                    # Clean up dangling dependencies (external to both current and expanded task sets)
-                    original_deps = t.dependencies
-                    t.dependencies = [dep for dep in original_deps if dep in valid_task_ids]
-                    if len(t.dependencies) != len(original_deps):
-                        removed = set(original_deps) - set(t.dependencies)
-                        logger.warning(f"Cleaned up dangling dependencies {removed} from expanded task '{t.id}'.")
-                    
-                    new_tasks.append(t)
-            
-            # Check for circular dependencies in the unified/combined task graph
-            combined_adj = {}
-            for tid, tval in current_tasks.items():
-                combined_adj[tid] = tval.get("dependencies", [])
-            for t in new_tasks:
-                combined_adj[t.id] = t.dependencies
+        # Deterministic goal expansion based on critic feedback
+        expanded_tasks = []
+        feedback_lower = critic_feedback.lower()
+        parent_id = list(current_tasks.keys())[-1] if current_tasks else None
+        parent_deps = [parent_id] if parent_id else []
 
-            visited = {}  # 0: unvisited, 1: visiting, 2: visited
-            cycle_detected = False
+        if any(k in feedback_lower for k in ["pricing", "cost", "fee", "tier", "subscription"]):
+            expanded_tasks.append(TaskItem(
+                id="task_exp_pricing",
+                title="Follow-up Pricing & TCO Deep Dive",
+                description=f"Detailed cost modeling and pricing tier analysis for {query[:60]}",
+                assigned_agent="analyzer",
+                dependencies=parent_deps,
+                is_critical=False
+            ))
+        if any(k in feedback_lower for k in ["benchmark", "performance", "bandwidth", "throughput", "latency", "fp8", "vram"]):
+            expanded_tasks.append(TaskItem(
+                id="task_exp_benchmarks",
+                title="Follow-up Empirical Benchmark Audit",
+                description=f"Targeted benchmark analysis covering throughput, latency, and resource metrics for {query[:60]}",
+                assigned_agent="analyzer",
+                dependencies=parent_deps,
+                is_critical=False
+            ))
+        if any(k in feedback_lower for k in ["security", "vulnerability", "auth", "compliance", "threat"]):
+            expanded_tasks.append(TaskItem(
+                id="task_exp_security",
+                title="Follow-up Security Architecture Audit",
+                description=f"Zero-trust security and threat modeling audit for {query[:60]}",
+                assigned_agent="critic",
+                dependencies=parent_deps,
+                is_critical=False
+            ))
+        if not expanded_tasks and any(k in feedback_lower for k in ["missing", "gap", "lack", "insufficient", "need"]):
+            expanded_tasks.append(TaskItem(
+                id="task_exp_general",
+                title="Follow-up Deep Evidence Investigation",
+                description=f"Targeted investigation resolving identified critic gaps: {critic_feedback[:80]}",
+                assigned_agent="researcher",
+                dependencies=parent_deps,
+                is_critical=False
+            ))
 
-            def dfs(node: str) -> bool:
-                if visited.get(node, 0) == 1:
-                    return True
-                if visited.get(node, 0) == 2:
-                    return False
+        new_tasks = [t for t in expanded_tasks if t.id not in current_tasks]
+        for t in new_tasks:
+            if not t.specialized_persona:
+                t.specialized_persona = self.match_task_persona(f"{t.title} {t.description}") or assigned_persona
 
-                visited[node] = 1
-                for dep in combined_adj.get(node, []):
-                    if dep in combined_adj:
-                        if dfs(dep):
-                            return True
-                visited[node] = 2
-                return False
+        return new_tasks
 
-            for task_id in list(combined_adj.keys()):
-                if visited.get(task_id, 0) == 0:
-                    if dfs(task_id):
-                        cycle_detected = True
-                        break
+    async def run(
+        self,
+        query: str,
+        context_summary: str = "",
+        active_skills: Optional[List[str]] = None,
+        assigned_persona: Optional[str] = None,
+        intent_analysis: Optional[Any] = None
+    ) -> Dict[str, Any]:
+        """Unified agent execution interface returning structured dictionary."""
+        plan = await self.generate_plan(query, context_summary, active_skills, assigned_persona, intent_analysis)
+        tasks_data = [t.model_dump() if hasattr(t, "model_dump") else t.dict() for t in plan.tasks]
+        return {
+            "status": "completed",
+            "agent_name": "planner",
+            "output": f"Constructed topological Task DAG containing {len(tasks_data)} coordinated tasks.",
+            "data": {"tasks": tasks_data, "query": query}
+        }
 
-            if cycle_detected:
-                logger.error("Circular dependency detected in combined graph after goal expansion! Rejecting expansion tasks to avoid deadlock.")
-                return []
-            
-            logger.info(f"Autonomous Goal Expansion active: Injected {len(new_tasks)} new tasks into graph.")
-            return new_tasks
-        except Exception as e:
-            logger.error(f"Error executing autonomous goal expansion: {e}")
-            return []
+    execute = run

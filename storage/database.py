@@ -43,7 +43,7 @@ class DatabaseManager:
 
     async def initialize_tables(self):
         """
-        Asynchronously creates schemas.
+        Asynchronously creates schemas and runs migrations.
         """
         logger.info("Initializing SQLite database schemas.")
         async with await self.get_connection() as conn:
@@ -58,19 +58,35 @@ class DatabaseManager:
                 )
             """)
             
-            # 2. Reports table
+            # 2. Tasks table
             await conn.execute("""
-                CREATE TABLE IF NOT EXISTS reports (
+                CREATE TABLE IF NOT EXISTS tasks (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    task_id TEXT NOT NULL,
                     session_id TEXT NOT NULL,
-                    content TEXT NOT NULL,
-                    confidence_score REAL,
+                    description TEXT,
+                    assigned_agent TEXT,
+                    status TEXT NOT NULL,
+                    output TEXT,
+                    error TEXT,
+                    dependencies_json TEXT,
                     timestamp REAL NOT NULL,
                     FOREIGN KEY(session_id) REFERENCES sessions(session_id)
                 )
             """)
-            
-            # 3. Execution Logs table (for streaming and reloading)
+
+            # 3. Logs tables (both canonical 'logs' and 'execution_logs' for compatibility)
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    session_id TEXT NOT NULL,
+                    timestamp REAL NOT NULL,
+                    agent TEXT NOT NULL,
+                    message TEXT NOT NULL,
+                    type TEXT NOT NULL,
+                    FOREIGN KEY(session_id) REFERENCES sessions(session_id)
+                )
+            """)
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS execution_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,7 +99,18 @@ class DatabaseManager:
                 )
             """)
             
-            # 4. Telemetry Traces table
+            # 4. Metrics & Traces tables
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS metrics (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    session_id TEXT NOT NULL,
+                    metric_name TEXT NOT NULL,
+                    metric_value REAL NOT NULL,
+                    metadata_json TEXT,
+                    timestamp REAL NOT NULL,
+                    FOREIGN KEY(session_id) REFERENCES sessions(session_id)
+                )
+            """)
             await conn.execute("""
                 CREATE TABLE IF NOT EXISTS traces (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -99,6 +126,62 @@ class DatabaseManager:
                     FOREIGN KEY(session_id) REFERENCES sessions(session_id)
                 )
             """)
+
+            # 5. Documents table
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS documents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    session_id TEXT NOT NULL,
+                    document_name TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    metadata_json TEXT,
+                    timestamp REAL NOT NULL,
+                    FOREIGN KEY(session_id) REFERENCES sessions(session_id)
+                )
+            """)
+
+            # 6. Feedback table
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS feedback (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    session_id TEXT NOT NULL,
+                    user_feedback TEXT NOT NULL,
+                    rating INTEGER,
+                    timestamp REAL NOT NULL,
+                    FOREIGN KEY(session_id) REFERENCES sessions(session_id)
+                )
+            """)
             
+            # 7. Reports table
+            await conn.execute("""
+                CREATE TABLE IF NOT EXISTS reports (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    session_id TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    confidence_score REAL,
+                    timestamp REAL NOT NULL,
+                    FOREIGN KEY(session_id) REFERENCES sessions(session_id)
+                )
+            """)
+            
+            # Schema migrations check / indices
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_tasks_session ON tasks(session_id);")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_logs_session ON logs(session_id);")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_exec_logs_session ON execution_logs(session_id);")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_metrics_session ON metrics(session_id);")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_docs_session ON documents(session_id);")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_feedback_session ON feedback(session_id);")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_reports_session ON reports(session_id);")
+            await conn.execute("CREATE INDEX IF NOT EXISTS idx_traces_session ON traces(session_id);")
+
             await conn.commit()
-            logger.info("Database schemas created successfully.")
+            logger.info("Database schemas and migration indices verified successfully.")
+
+    async def run_migrations(self):
+        """
+        Executes idempotent schema migrations.
+        """
+        await self.initialize_tables()
+
+    # Convenience alias
+    initialize = initialize_tables

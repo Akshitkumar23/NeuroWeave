@@ -1,0 +1,92 @@
+[
+  {
+    "url": "https://en.wikipedia.org/wiki/HTTP_404",
+    "title": "Wikipedia: HTTP 404",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "factual_01",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+    "title": "Wikipedia: List of HTTP status codes",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "factual_01",
+    "citation_id": "2"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/PostgreSQL",
+    "title": "Wikipedia: PostgreSQL",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "factual_02",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/MongoDB",
+    "title": "Wikipedia: MongoDB",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "comparison_01",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/PostgreSQL",
+    "title": "Wikipedia: PostgreSQL",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "comparison_01",
+    "citation_id": "2"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Hono.js",
+    "title": "Wikipedia: Hono.js",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "comparison_05",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Google_Flu_Trends",
+    "title": "Wikipedia: Google Flu Trends",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "forecast_03",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Google_Trends",
+    "title": "Wikipedia: Google Trends",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "forecast_03",
+    "citation_id": "2"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers",
+    "title": "Wikipedia: List of TCP and UDP port numbers",
+    "tier": "Tier 2 (Reputable Technical Publication)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "adversarial_03",
+    "citation_id": "1"
+  }
+]

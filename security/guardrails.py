@@ -1,6 +1,6 @@
 import re
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from urllib.parse import urlparse
 
 logger = logging.getLogger("neuroweave.guardrails")
@@ -8,13 +8,16 @@ logger = logging.getLogger("neuroweave.guardrails")
 class SecurityGuardrails:
     # Prompt injection vectors
     INJECTION_PATTERNS = [
-        r"(ignore\s+previous\s+instructions)",
-        r"(system\s+prompt\s+override)",
+        r"(ignore\s+(?:all\s+)?(?:previous\s+)?instructions)",
+        r"(system\s+(?:prompt\s+)?override)",
         r"(you\s+are\s+now\s+freed)",
         r"(jailbreak)",
-        r"(dan\s+mode)",
+        r"(dan\s+mode|you\s+are\s+now\s+dan)",
         r"(under\s+no\s+circumstances\s+follow)",
-        r"(do\s+not\s+format\s+as\s+json)"
+        r"(do\s+not\s+format\s+as\s+json)",
+        r"(<script.*?>.*?</script>)",
+        r"(reveal\s+(?:all\s+)?(?:api\s+)?keys?|leak\s+(?:the\s+)?(?:private\s+)?prompt|print\s+(?:all\s+)?(?:secret\s+)?keys?)",
+        r"(drop\s+table\b|;\s*--)",
     ]
     
     # Blocked local IP/domain targets
@@ -32,13 +35,49 @@ class SecurityGuardrails:
     def sanitize_user_query(cls, query: str) -> str:
         """
         Scans and sanitizes queries against potential prompt injection attacks.
+        Fences untrusted instruction vectors strictly as inert data without destroying legitimate query context.
         """
         for pattern in cls.INJECTION_PATTERNS:
             if re.search(pattern, query, re.IGNORECASE):
                 logger.warning(f"Security Alert: Potential prompt injection attempt intercepted: {pattern}")
-                # Neutralize injection by stripping dangerous instructions
-                query = re.sub(pattern, "[GUARDRAILS CLEARED PHRASE]", query, flags=re.IGNORECASE)
+                # Neutralize injection vector and isolate strictly as inert data
+                query = re.sub(pattern, "<untrusted_data>[GUARDRAILS CLEARED PHRASE]</untrusted_data>", query, flags=re.IGNORECASE)
         return query
+
+    @classmethod
+    def is_prompt_injection(cls, query: str) -> Tuple[bool, str]:
+        """
+        Classifies whether an input is an adversarial instruction, system override,
+        delimiter injection, role impersonation, or secret extraction attack.
+        """
+        q_lower = query.lower()
+        
+        # Direct override / delimiter patterns
+        extended_patterns = [
+            (r"(ignore\s+(?:all\s+)?(?:previous\s+)?instructions)", "Direct Instruction Override"),
+            (r"(system\s+(?:prompt\s+)?override)", "System Prompt Override"),
+            (r"(\[system_override\]|<system_override>|###\s*system\s*override)", "Delimiter Injection"),
+            (r"(reveal|output|print|leak|show|dump)\s+(?:all\s+)?(?:internal\s+)?(?:system\s+)?(?:prompts?|instructions?|passwords?|keys?|admin\s+secrets?)", "Credential / Prompt Extraction"),
+            (r"(secret\s+admin\s+passwords?|admin\s+passwords?)", "Secret Extraction Attempt"),
+            (r"(you\s+are\s+now\s+freed|you\s+are\s+now\s+dan|jailbreak)", "Jailbreak / Persona Hijack"),
+            (r"(act\s+as\s+an\s+unrestricted\s+ai|bypass\s+(?:all\s+)?guardrails)", "Safety Bypass Directive"),
+            (r"(under\s+no\s+circumstances\s+follow)", "Negative Constraint Injection"),
+            (r"(<script.*?>.*?</script>)", "XSS Payload Injection"),
+            (r"(drop\s+table\b|;\s*--)", "SQL Injection Vector"),
+            # Phase 6.4 Fix #6: Credential exfiltration patterns (compound-verb attacks)
+            (r"(extract\s+and\s+(?:dump|export|list|output|reveal|show)).*?(passwords?|credentials?|secrets?|(?:api[\s_]?|private\s+)?keys?)", "Credential Exfiltration — Compound Verb"),
+            (r"(list\s+all\s+(?:credentials?|secrets?|passwords?|(?:api[\s_]?|private\s+)?keys?))", "Credential Enumeration Attack"),
+            (r"(export\s+all\s+(?:(?:private|customer|user|internal|confidential|sensitive)\s+){1,3}(?:data|records?|information|files?))", "Data Exfiltration Attack"),
+            (r"(ignore\s+security\s+(?:restrictions?|guardrails?|policies?|controls?|rules?))", "Security Restriction Bypass"),
+            (r"(dump\s+(?:all\s+)?(?:internal\s+)?(?:database\s+)?passwords?)", "Password Dump Attack"),
+            (r"(reveal\s+(?:all\s+)?stored\s+(?:credentials?|passwords?|secrets?|keys?))", "Stored Credential Extraction"),
+        ]
+        
+        for pattern, reason in extended_patterns:
+            if re.search(pattern, query, re.IGNORECASE):
+                return True, reason
+                
+        return False, ""
 
     @classmethod
     def is_url_safe(cls, url: str) -> bool:
@@ -110,3 +149,15 @@ class SecurityGuardrails:
         # Neutralize HTML script blocks
         sanitized = re.sub(r"<script.*?>.*?</script>", "[SCRIPT INTERCEPTED]", text, flags=re.IGNORECASE | re.DOTALL)
         return sanitized
+
+
+def is_prompt_injection(query: str) -> bool:
+    """Convenience function returning boolean indicating if query is a prompt injection attempt."""
+    is_inj, _ = SecurityGuardrails.is_prompt_injection(query)
+    return is_inj
+
+
+def sanitize_input(query: str) -> str:
+    """Convenience function returning sanitized query string."""
+    return SecurityGuardrails.sanitize_user_query(query)
+

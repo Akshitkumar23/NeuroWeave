@@ -56,15 +56,18 @@ class PureVectorStore:
         Fetches text embeddings from Gemini API if online, else returns None.
         Includes logging for non-200 responses to aid debugging.
         """
+        if os.getenv("NEUROWEAVE_MODE", "ZERO_API").upper() == "ZERO_API":
+            return None
+            
         if not api_key:
             api_key = os.getenv("GEMINI_API_KEY")
             
-        if not api_key:
+        if not api_key or "mock" in api_key.lower() or "placeholder" in api_key.lower():
             return None
             
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={api_key}"
-            headers = {"Content-Type": "application/json"}
+            url = "https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent"
+            headers = {"Content-Type": "application/json", "x-goog-api-key": api_key}
             payload = {
                 "model": "models/text-embedding-004",
                 "content": {

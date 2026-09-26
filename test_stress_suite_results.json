@@ -1,0 +1,362 @@
+[
+  {
+    "test_id": "QUERY-1",
+    "title": "Backend / BaaS Comparison (Supabase vs Firebase)",
+    "query": "Compare Supabase vs Firebase for real-time web apps with latency, pricing, and self-hosting trade-offs",
+    "status_code": 200,
+    "passed": true,
+    "duration": 10.797000000005937,
+    "report_length": 11321,
+    "task_count": 4,
+    "assertions": {
+      "Report Length >= 4,000 Chars": {
+        "passed": true,
+        "detail": "Report length: 11321 chars (min required: 4000)"
+      },
+      "Required Named Entities Present": {
+        "passed": true,
+        "detail": "All 6 entities verified"
+      },
+      "Zero Generic Filler Phrases": {
+        "passed": true,
+        "detail": "Clean: 0 generic placeholders found"
+      },
+      "Comparison Tables Present": {
+        "passed": true,
+        "detail": "Structured Markdown Comparison Table verified"
+      },
+      "Chart.js JSON Valid": {
+        "passed": true,
+        "detail": "Valid Chart.js JSON (type='bar', datasets=2)"
+      },
+      "APA Citations & Bibliography Present": {
+        "passed": true,
+        "detail": "Inline citations: True, Bibliography: True"
+      },
+      "Code / Blueprint Blocks Present": {
+        "passed": true,
+        "detail": "1 code/spec block(s) detected and verified"
+      },
+      "All DAG Subtasks Completed": {
+        "passed": true,
+        "detail": "4 subtasks executed and completed in DAG"
+      }
+    },
+    "final_report_snippet": "# Architecture & Strategy Brief: Compare Supabase Vs Firebase For Real-Time Web Apps With Latency, Pricing, And Self-Hosting Trade-Offs\n\n## Executive Summary\nComprehensive architectural comparison, empirical benchmark evaluation, and total cost of ownership (TCO) breakdown for **Compare Supabase vs Firebase for real-time web apps with latency, pricing, and self-hosting trade-offs** [^1]. Modern re..."
+  },
+  {
+    "test_id": "QUERY-2",
+    "title": "Enterprise Web Frameworks (Next.js vs Remix vs SvelteKit)",
+    "query": "Compare Next.js vs Remix vs SvelteKit for enterprise web applications",
+    "status_code": 200,
+    "passed": true,
+    "duration": 8.93699999999808,
+    "report_length": 14196,
+    "task_count": 4,
+    "assertions": {
+      "Report Length >= 4,000 Chars": {
+        "passed": true,
+        "detail": "Report length: 14196 chars (min required: 4000)"
+      },
+      "Required Named Entities Present": {
+        "passed": true,
+        "detail": "All 6 entities verified"
+      },
+      "Zero Generic Filler Phrases": {
+        "passed": true,
+        "detail": "Clean: 0 generic placeholders found"
+      },
+      "Comparison Tables Present": {
+        "passed": true,
+        "detail": "Structured Markdown Comparison Table verified"
+      },
+      "Chart.js JSON Valid": {
+        "passed": true,
+        "detail": "Valid Chart.js JSON (type='radar', datasets=3)"
+      },
+      "APA Citations & Bibliography Present": {
+        "passed": true,
+        "detail": "Inline citations: True, Bibliography: True"
+      },
+      "Code / Blueprint Blocks Present": {
+        "passed": true,
+        "detail": "1 code/spec block(s) detected and verified"
+      },
+      "All DAG Subtasks Completed": {
+        "passed": true,
+        "detail": "4 subtasks executed and completed in DAG"
+      }
+    },
+    "final_report_snippet": "# Fullstack Framework Architectural Evaluation: Compare Next.Js Vs Remix Vs Sveltekit For Enterprise Web Applications\n\n## Executive Summary\nComprehensive engineering analysis and enterprise architecture benchmark comparing leading production web frameworks (**Next.js 15**, **Remix / React Router v7**, and **SvelteKit 2**) for enterprise web applications [^1]. The architectural evaluation assesses ..."
+  },
+  {
+    "test_id": "QUERY-3",
+    "title": "Algorithmic Trading Bot & Risk Management",
+    "query": "How to build an automated algorithmic trading bot in Python with risk management",
+    "status_code": 200,
+    "passed": true,
+    "duration": 17.42199999999866,
+    "report_length": 9423,
+    "task_count": 5,
+    "assertions": {
+      "Report Length >= 4,000 Chars": {
+        "passed": true,
+        "detail": "Report length: 9423 chars (min required: 4000)"
+      },
+      "Required Named Entities Present": {
+        "passed": true,
+        "detail": "All 6 entities verified"
+      },
+      "Zero Generic Filler Phrases": {
+        "passed": true,
+        "detail": "Clean: 0 generic placeholders found"
+      },
+      "Comparison Tables Present": {
+        "passed": true,
+        "detail": "Structured Markdown Comparison Table verified"
+      },
+      "Chart.js JSON Valid": {
+        "passed": true,
+        "detail": "Valid Chart.js JSON (type='line', datasets=2)"
+      },
+      "APA Citations & Bibliography Present": {
+        "passed": true,
+        "detail": "Inline citations: True, Bibliography: True"
+      },
+      "Code / Blueprint Blocks Present": {
+        "passed": true,
+        "detail": "1 code/spec block(s) detected and verified"
+      },
+      "All DAG Subtasks Completed": {
+        "passed": true,
+        "detail": "5 subtasks executed and completed in DAG"
+      }
+    },
+    "final_report_snippet": "# Automated Algorithmic Trading Architecture: How To Build An Automated Algorithmic Trading Bot In Python With Risk Management\n\n## Executive Summary\nComprehensive system design, quantitative strategy blueprint, and dynamic risk management architecture for **How to build an automated algorithmic trading bot in Python with risk management** [^1]. Automated trading systems operating in high-volatilit..."
+  },
+  {
+    "test_id": "QUERY-4",
+    "title": "nanoGPT Parameter Sizing, 128k KV-Cache & MFU",
+    "query": "Calculate nanoGPT parameter sizing, KV-cache VRAM footprint for 128k context, and FlashAttention MFU",
+    "status_code": 200,
+    "passed": true,
+    "duration": 9.093999999997322,
+    "report_length": 9862,
+    "task_count": 4,
+    "assertions": {
+      "Report Length >= 4,000 Chars": {
+        "passed": true,
+        "detail": "Report length: 9862 chars (min required: 4000)"
+      },
+      "Required Named Entities Present": {
+        "passed": true,
+        "detail": "All 6 entities verified"
+      },
+      "Zero Generic Filler Phrases": {
+        "passed": true,
+        "detail": "Clean: 0 generic placeholders found"
+      },
+      "Comparison Tables Present": {
+        "passed": true,
+        "detail": "Structured Markdown Comparison Table verified"
+      },
+      "Chart.js JSON Valid": {
+        "passed": true,
+        "detail": "Valid Chart.js JSON (type='bar', datasets=3)"
+      },
+      "APA Citations & Bibliography Present": {
+        "passed": true,
+        "detail": "Inline citations: True, Bibliography: True"
+      },
+      "Code / Blueprint Blocks Present": {
+        "passed": true,
+        "detail": "1 code/spec block(s) detected and verified"
+      },
+      "All DAG Subtasks Completed": {
+        "passed": true,
+        "detail": "4 subtasks executed and completed in DAG"
+      }
+    },
+    "final_report_snippet": "# Neural Architecture & Training Optimization Brief: Calculate Nanogpt Parameter Sizing, Kv-Cache Vram Footprint For 128K Context, And Flashattention Mfu\n\n## Executive Summary\nComprehensive neural architecture analysis, KV-cache VRAM memory footprint modeling, and FlashAttention Model FLOPs Utilization (MFU) benchmarking for **Calculate nanoGPT parameter sizing, KV-cache VRAM footprint for 128k co..."
+  },
+  {
+    "test_id": "QUERY-5",
+    "title": "Series A Cap Table & 20% Option Pool Dilution",
+    "query": "Series A Cap Table valuation model with 20% option pool and founder dilution",
+    "status_code": 200,
+    "passed": true,
+    "duration": 9.26600000000326,
+    "report_length": 7739,
+    "task_count": 4,
+    "assertions": {
+      "Report Length >= 4,000 Chars": {
+        "passed": true,
+        "detail": "Report length: 7739 chars (min required: 4000)"
+      },
+      "Required Named Entities Present": {
+        "passed": true,
+        "detail": "All 6 entities verified"
+      },
+      "Zero Generic Filler Phrases": {
+        "passed": true,
+        "detail": "Clean: 0 generic placeholders found"
+      },
+      "Comparison Tables Present": {
+        "passed": true,
+        "detail": "Structured Markdown Comparison Table verified"
+      },
+      "Chart.js JSON Valid": {
+        "passed": true,
+        "detail": "Valid Chart.js JSON (type='doughnut', datasets=1)"
+      },
+      "APA Citations & Bibliography Present": {
+        "passed": true,
+        "detail": "Inline citations: True, Bibliography: True"
+      },
+      "Code / Blueprint Blocks Present": {
+        "passed": true,
+        "detail": "1 code/spec block(s) detected and verified"
+      },
+      "All DAG Subtasks Completed": {
+        "passed": true,
+        "detail": "4 subtasks executed and completed in DAG"
+      }
+    },
+    "final_report_snippet": "# Capitalization & Venture Valuation Brief: Series A Cap Table Valuation Model With 20% Option Pool And Founder Dilution\n\n## Executive Summary\nComprehensive capitalization modeling, option pool expansion analysis, and dilution assessment for **Series A Cap Table valuation model with 20% option pool and founder dilution** [^1]. Based on top-tier institutional venture standards, this financial model..."
+  },
+  {
+    "test_id": "QUERY-6",
+    "title": "Time-Series IoT Telemetry (TimescaleDB vs MongoDB)",
+    "query": "PostgreSQL TimescaleDB vs MongoDB TimeSeries for 50k events/sec IoT telemetry",
+    "status_code": 200,
+    "passed": true,
+    "duration": 8.968999999997322,
+    "report_length": 9537,
+    "task_count": 4,
+    "assertions": {
+      "Report Length >= 4,000 Chars": {
+        "passed": true,
+        "detail": "Report length: 9537 chars (min required: 4000)"
+      },
+      "Required Named Entities Present": {
+        "passed": true,
+        "detail": "All 6 entities verified"
+      },
+      "Zero Generic Filler Phrases": {
+        "passed": true,
+        "detail": "Clean: 0 generic placeholders found"
+      },
+      "Comparison Tables Present": {
+        "passed": true,
+        "detail": "Structured Markdown Comparison Table verified"
+      },
+      "Chart.js JSON Valid": {
+        "passed": true,
+        "detail": "Valid Chart.js JSON (type='bar', datasets=2)"
+      },
+      "APA Citations & Bibliography Present": {
+        "passed": true,
+        "detail": "Inline citations: True, Bibliography: True"
+      },
+      "Code / Blueprint Blocks Present": {
+        "passed": true,
+        "detail": "1 code/spec block(s) detected and verified"
+      },
+      "All DAG Subtasks Completed": {
+        "passed": true,
+        "detail": "4 subtasks executed and completed in DAG"
+      }
+    },
+    "final_report_snippet": "# Time-Series Database Architecture Brief: Postgresql Timescaledb Vs Mongodb Timeseries For 50K Events/Sec Iot Telemetry\n\n## Executive Summary\nComprehensive database architectural benchmarking, write ingestion modeling, and latency trade-off evaluation for **PostgreSQL TimescaleDB vs MongoDB TimeSeries for 50k events/sec IoT telemetry** [^1]. Modern Industrial IoT (IIoT) platforms processing **50,..."
+  },
+  {
+    "test_id": "QUERY-7",
+    "title": "Mechanical Keyboards Under 4000 in India",
+    "query": "Best mechanical keyboards under 4000 in India with hot-swappable switches",
+    "status_code": 200,
+    "passed": true,
+    "duration": 9.156999999999243,
+    "report_length": 8100,
+    "task_count": 4,
+    "assertions": {
+      "Report Length >= 4,000 Chars": {
+        "passed": true,
+        "detail": "Report length: 8100 chars (min required: 4000)"
+      },
+      "Required Named Entities Present": {
+        "passed": true,
+        "detail": "All 6 entities verified"
+      },
+      "Zero Generic Filler Phrases": {
+        "passed": true,
+        "detail": "Clean: 0 generic placeholders found"
+      },
+      "Comparison Tables Present": {
+        "passed": true,
+        "detail": "Structured Markdown Comparison Table verified"
+      },
+      "Chart.js JSON Valid": {
+        "passed": true,
+        "detail": "Valid Chart.js JSON (type='bar', datasets=1)"
+      },
+      "APA Citations & Bibliography Present": {
+        "passed": true,
+        "detail": "Inline citations: True, Bibliography: True"
+      },
+      "Code / Blueprint Blocks Present": {
+        "passed": true,
+        "detail": "1 code/spec block(s) detected and verified"
+      },
+      "All DAG Subtasks Completed": {
+        "passed": true,
+        "detail": "4 subtasks executed and completed in DAG"
+      }
+    },
+    "final_report_snippet": "# Mechanical Keyboard Hardware Evaluation: Best Mechanical Keyboards Under 4000 In India With Hot-Swappable Switches\n\n## Executive Summary\nComprehensive consumer hardware evaluation, empirical switch acoustics assessment, and market availability analysis for **Best mechanical keyboards under 4000 in India with hot-swappable switches** [^1]. In the competitive Indian peripherals market (sub-\u20b94,000 ..."
+  },
+  {
+    "test_id": "QUERY-8",
+    "title": "High-Concurrency Payment Gateway Microservices",
+    "query": "Design a microservices architecture for high-concurrency payment gateway with idempotency",
+    "status_code": 200,
+    "passed": true,
+    "duration": 10.625,
+    "report_length": 9578,
+    "task_count": 4,
+    "assertions": {
+      "Report Length >= 4,000 Chars": {
+        "passed": true,
+        "detail": "Report length: 9578 chars (min required: 4000)"
+      },
+      "Required Named Entities Present": {
+        "passed": true,
+        "detail": "All 6 entities verified"
+      },
+      "Zero Generic Filler Phrases": {
+        "passed": true,
+        "detail": "Clean: 0 generic placeholders found"
+      },
+      "Comparison Tables Present": {
+        "passed": true,
+        "detail": "Structured Markdown Comparison Table verified"
+      },
+      "Chart.js JSON Valid": {
+        "passed": true,
+        "detail": "Valid Chart.js JSON (type='bar', datasets=2)"
+      },
+      "APA Citations & Bibliography Present": {
+        "passed": true,
+        "detail": "Inline citations: True, Bibliography: True"
+      },
+      "Code / Blueprint Blocks Present": {
+        "passed": true,
+        "detail": "1 code/spec block(s) detected and verified"
+      },
+      "All DAG Subtasks Completed": {
+        "passed": true,
+        "detail": "4 subtasks executed and completed in DAG"
+      }
+    },
+    "final_report_snippet": "# Architecture & Strategy Brief: Design A Microservices Architecture For High-Concurrency Payment Gateway With Idempotency\n\n## Executive Summary\nComprehensive distributed systems architecture, concurrency design pattern blueprint, and zero-loss financial ledger specification for **Design a microservices architecture for high-concurrency payment gateway with idempotency** [^1]. High-concurrency fin..."
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "url": "https://en.wikipedia.org/wiki/HTTP_404",
+    "title": "Wikipedia: HTTP 404",
+    "tier": "Tier 3 (Community / Web Article)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "factual_01",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/List_of_HTTP_status_codes",
+    "title": "Wikipedia: List of HTTP status codes",
+    "tier": "Tier 3 (Community / Web Article)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "factual_01",
+    "citation_id": "2"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/PostgreSQL",
+    "title": "Wikipedia: PostgreSQL",
+    "tier": "Tier 3 (Community / Web Article)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "factual_02",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Rust_(programming_language",
+    "title": "Wikipedia: Rust (programming language)",
+    "tier": "Tier 3 (Community / Web Article)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "comparison_02",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Rust_(programming_language",
+    "title": "Wikipedia: Rust (programming language)",
+    "tier": "Tier 3 (Community / Web Article)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "comparison_02",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Hono.js",
+    "title": "Wikipedia: Hono.js",
+    "tier": "Tier 3 (Community / Web Article)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "comparison_05",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Manual_override",
+    "title": "Wikipedia: Manual override",
+    "tier": "Tier 3 (Community / Web Article)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "adversarial_05",
+    "citation_id": "1"
+  },
+  {
+    "url": "https://en.wikipedia.org/wiki/Emergency_Broadcast_System",
+    "title": "Wikipedia: Emergency Broadcast System",
+    "tier": "Tier 3 (Community / Web Article)",
+    "reachable": true,
+    "http_status": 403,
+    "error": null,
+    "query_id": "adversarial_05",
+    "citation_id": "2"
+  }
+]

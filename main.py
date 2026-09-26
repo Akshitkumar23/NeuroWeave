@@ -12,6 +12,15 @@ from storage.database import DatabaseManager
 from observability.logger import setup_observability_logging
 import api.routes as routes
 
+# Phase 6.4 Fix #1: Import tool modules at startup so @registry.register_tool decorators
+# execute at import time, registering tools into the global ToolRegistry singleton.
+# Without these imports, registry.execute("web_search") returns TOOL_NOT_FOUND.
+import tools.web_search  # noqa: F401  — registers "web_search" tool
+import tools.code_executor  # noqa: F401  — registers "code_executor" / "python_sandbox" tool
+import tools.public_api_catalog  # noqa: F401  — registers "public_api_catalog" tool
+import tools.api_executor  # noqa: F401  — registers "api_executor" tool
+
+
 # Load env variables
 load_dotenv()
 
@@ -51,6 +60,16 @@ async def startup_event():
     
     # Expose db manager to routes router
     routes.db_manager = db_mgr
+
+    # Pre-warm Persona Registry & Skill Catalog in memory
+    try:
+        from core.persona_manager import get_persona_registry
+        from core.skill_loader import get_skill_catalog
+        get_persona_registry()
+        get_skill_catalog()
+    except Exception as e:
+        logger.warning(f"Error pre-warming registries: {e}")
+
     logger.info("NeuroWeave systems successfully initialized.")
 
 @app.get("/")

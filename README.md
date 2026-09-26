@@ -1,219 +1,284 @@
-# NeuroWeave: Autonomous Research & Decision Engine
+# NeuroWeave: Autonomous Multi-Agent Intelligence & Research Engine
 
-NeuroWeave is a production-grade, enterprise-ready **autonomous multi-agent research orchestration platform**. Built using Python and FastAPI, it coordinates **7 specialized subagents** executing in parallel, evaluates results through a structured **Critic reflection loop**, resolves contradictions via a **2-round debate system**, and synthesizes executive strategic reports utilizing **RAG hierarchical memory hierarchies**. 
+<div align="center">
 
-It features an interactive **glassmorphism dashboard** built with Vanilla CSS and HTML5, displaying a live-rendering Directed Acyclic Graph (DAG) execution tree, a scrolling thought log, and comparative latencies waterfall timelines.
+[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue.svg?logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Zero-API Local Mode](https://img.shields.io/badge/Local_Mode-100%25_Zero--API_Ready-brightgreen.svg?logo=gnubash&logoColor=white)]()
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)](https://github.com)
+[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
+**An enterprise-grade, autonomous multi-agent intelligence platform that formulates dynamic task DAGs, executes deep web intelligence & sandboxed Python mathematics, audits facts via adversarial debate, and synthesizes publication-grade executive briefs with interactive charts and APA citations.**
+
+</div>
 
 ---
 
-## 7 Core Architecture Overview
+**NeuroWeave** is a self-contained autonomous multi-agent research and reasoning engine built around deterministic planning, evidence retrieval, analysis, verification, memory and synthesis.
+
+It operates in **100% Pure Zero-API Deterministic Mode**: fully self-contained execution using dynamic DAG generation, live DuckDuckGo/Wikipedia evidence retrieval, safe Python sandboxed mathematics, epistemic uncertainty bounding, and multi-round dialectic contradiction auditing with zero external LLM dependencies, zero cloud API keys, and zero local model runtimes.
+
+---
+
+## 🏗️ 8-Stage Autonomous Multi-Agent Architecture
 
 ```mermaid
 graph TD
-    User([User Objective Query]) --> InputShield[Security Guardrails / Inject Shield]
-    InputShield --> Router[Intelligent Model Router]
+    User([🎯 User Objective Query]) --> Shield[🛡️ Security Guardrails & SSRF Shield]
+    Shield --> Router[⚡ Intelligent Model Router]
     
-    subgraph "Orchestration & Central Controls"
-        Orchestrator[Async Multi-Agent Orchestrator]
-        StateMgr[(Centralized State Manager)]
-        ToolRegistry[Tool Registry System]
-        RBAC[Agent Permissions RBAC]
+    subgraph "Central Orchestration & State"
+        Orchestrator[🧠 Master Async Orchestrator]
+        StateMgr[(📦 State Manager & Checkpoints)]
+        ToolRegistry[⚙️ Tool Registry & RBAC]
     end
     
     Router --> Orchestrator
     Orchestrator <--> StateMgr
     Orchestrator --> ToolRegistry
-    Orchestrator --> RBAC
     
-    subgraph "7 Specialized Intelligent Agents"
-        Intent[1. Intent Analyzer]
-        Planner[2. Task Planner]
-        Researcher[3. Research Agent]
-        Analyzer[4. Data Analyst / Sandbox]
-        MemoryAgent[5. Memory Agent]
-        Critic[6. Critic & Reflection]
-        Debate[7. Debate Engine]
-        Synthesizer[8. Synthesizer]
+    subgraph "8 Specialized Autonomous Subagents"
+        Intent[1. Intent Analyzer & Persona Mapper]
+        Planner[2. Dynamic DAG Planner]
+        Researcher[3. Deep Web Researcher]
+        Analyzer[4. Python Sandbox Analyst]
+        MemoryAgent[5. Hierarchical Memory Agent]
+        Critic[6. NEXUS Quality Auditor]
+        Debate[7. Dialectical Debate Engine]
+        Synthesizer[8. Strategic Executive Synthesizer]
     end
     
     Orchestrator --> Intent
-    Orchestrator --> Planner
-    Orchestrator --> Researcher
-    Orchestrator --> Analyzer
-    Orchestrator --> MemoryAgent
-    Orchestrator --> Critic
-    Orchestrator --> Debate
-    Orchestrator --> Synthesizer
+    Intent --> Planner
+    Planner --> Researcher
+    Researcher --> Analyzer
+    Analyzer --> MemoryAgent
+    MemoryAgent --> Critic
+    Critic --> Debate
+    Debate --> Synthesizer
     
-    subgraph "Memory Hierarchy"
-        WM[Working Memory]
-        EM[(Episodic Memory - SQLite)]
-        SM[(Semantic Memory - Local Vector)]
+    subgraph "3-Tier Hierarchical Memory"
+        WM[Working Memory: Context Ledger]
+        EM[(Episodic Memory: SQLite DB)]
+        SM[(Semantic Memory: PureVectorStore)]
     end
     
     MemoryAgent <--> WM
     MemoryAgent <--> EM
     MemoryAgent <--> SM
 
-    subgraph "Extensible Tool Interfaces"
-        Search[Web Search / Parser]
-        Sandbox[Safe Code Executor]
+    subgraph "Extensible Sandboxed Tools"
+        WebSearch[DuckDuckGo & Wikipedia Crawler]
+        Sandbox[Sandboxed Safe Code Executor]
+        CitationMgr[APA Evidence Citation Manager]
     end
     
-    ToolRegistry --> Search
+    ToolRegistry --> WebSearch
     ToolRegistry --> Sandbox
-    
-    subgraph "Observability & Telemetry"
-        Telemetry[JSON Logger & Metrics Span]
-        Bench[Benchmark Evaluator]
+    ToolRegistry --> CitationMgr
+
+    subgraph "Live Frontend & Observability"
+        SSE[⚡ Real-Time SSE Gateway]
+        UI[💻 Glassmorphic UI Dashboard]
+        Logs[📜 Terminal Thought Stream Drawer]
+        DAG[📊 Interactive SVG Execution Graph]
+        Inspector[🔍 Opal Node Inspector Modal]
     end
     
-    Orchestrator --> Telemetry
-    Critic --> Bench
-    
-    Orchestrator --> SSE[Real-time SSE Gateway]
-    SSE --> UI[Glassmorphic UI Dashboard]
+    Orchestrator --> SSE
+    SSE --> UI
+    UI --> Logs
+    UI --> DAG
+    UI --> Inspector
 ```
 
 ---
 
-## 16 Advanced Production-Grade Systems
+## 🤖 Detailed Subagent Breakdown
 
-1. **Intelligent Model Router** (`core/model_router.py`): Dynamically selects models (Gemini, OpenAI, Groq, or Local Ollama) based on latency sensitivity, capability weightings, and financial costs. Performs automatic failover to fallback models.
-2. **Centralized State Manager** (`core/state_manager.py`): Thread-safe `asyncio.Lock` storage tracking task graph states. Serializes transaction checkpoints to allow safe rollback and crash recovery.
-3. **Tool Registry System** (`core/tool_registry.py`): Decorator-driven registered tools, validating Pydantic schemas, and enforcing timeouts.
-4. **Agent Permission System** (`security/permissions.py`): Implements Role-Based Agent Control (RBAC) to restrict tool access (e.g. `Researcher` is strictly blocked from executing Python code).
-5. **Persistent Storage Layer** (`storage/`): CRUD repository pattern implemented with `aiosqlite` backing up sessions, logs, traces, and synthesized strategic reports.
-6. **Observability Pipeline** (`observability/`): Console/file-based asynchronous JSON logger, token counter meters, cost estimators, and latency waterfall tracers.
-7. **Structured Output System** (`core/structured_output.py`): Enforces clean Pydantic validations, utilizing self-correction prompt loops to repair malformed LLM outputs.
-8. **Citation & Evidence Engine** (`utils/citation_manager.py`): Ingests URLs, scores domain credibility, keeps exact text snippets, and generates bibliographies.
-9. **Failure Recovery System**: Exponential backoff retry policies and degraded execution loops using offline episodic caches if third-party APIs fail.
-10. **Security & Guardrails** (`security/guardrails.py`): Regex prompt injection filters, SSRF domain checkers, and blocked Python keyword identifiers to secure execution.
-11. **Benchmark & Evaluation** (`evaluation/evaluator.py`): Compares baseline sequential pipelines against reflection loops and debates, outputting MD analysis tables.
-12. **Memory Hierarchy**: Partitions context retrieval into fast Working variables, SQLite-based Episodic runs, and pure-Python Semantic RAG vector stores.
-13. **Configuration Layer** (`config/`): System settings, agent registries, prompts, and cost parameters externalized in clean YAML files.
-14. **Autonomous Goal Expansion**: Planner scans Critic rejections to autonomously inject subtasks exploring risk factors, competitor profiles, or funding rounds on-the-fly.
-15. **Multi-Agent Debate System** (`agents/debate_engine.py`): Runs 2-round cross-arguments between Critic challenges and Researcher claims to build a verified consensus.
-16. **Machine Learning & NLP Insights Engine** (`utils/ml_utils.py`): Leverages TextBlob locally to evaluate sentiment scores and extract top keyphrases from finalized reports.
+| Agent | Responsibility | Core Technology / Mechanics |
+| :--- | :--- | :--- |
+| **1. Intent Analyzer** | Classifies query intent, category, and maps objective to **261 Agency Specialist Personas** across 6 divisions. | Regex + Keyword intent parsing, Persona Registry (`core/persona_manager.py`) |
+| **2. Dynamic Planner** | Decomposes objectives into a multi-wave Directed Acyclic Graph (DAG) with dependency resolution. | Topological sort DAG engine (`core/dag_engine.py`) |
+| **3. Web Researcher** | Executes multi-angle web searches, extracts Wikipedia paragraphs, and captures verifiable sources. | DuckDuckGo Instant Answers + Wikipedia API (`tools/web_search.py`) |
+| **4. Sandbox Analyst** | Writes and executes safe Python scripts in a sandboxed subprocess to compute exact quantitative metrics. | Restricted AST subprocess executor (`tools/code_executor.py`) |
+| **5. Memory Agent** | Synchronizes intermediate findings across working context, SQLite episodic records, and vector embeddings. | 3-Tier memory manager (`memory/memory_manager.py`) |
+| **6. NEXUS Critic** | Audits findings for factual consistency, mathematical validity, and hallucinations. Calculates confidence score (0.00–1.00). | Adversarial fact-checker & rubric scorer (`agents/critic.py`) |
+| **7. Debate Engine** | Conducts 2-round dialectical debate between Critic objections and Researcher evidence to form verified consensus. | Adversarial consensus engine (`agents/debate_engine.py`) |
+| **8. Synthesizer** | Compiles publication-grade strategic brief with executive summary, comparison matrices, Chart.js graphs, and APA citations. | Adaptive synthesizer (`core/superpower_synthesizer.py`) |
 
 ---
 
-## Next-Gen UI Features (Interactive Dashboard)
-We have expanded the Vanilla glassmorphic dashboard to offer top-tier interactive utility:
-1. **Dynamic Chart.js Graphs**: When comparing numeric data, the system automatically draws responsive Bar and Pie charts dynamically using Chart.js inside the markdown.
-2. **Interactive Speech-to-Text Input**: Click the microphone icon next to the input to talk. It features start/stop toggles with recording pulse borders.
-3. **Session History Sidebar**: Save and retrieve past research tasks with full deletion functionality (without confirmation popup annoyances).
-4. **1-Click PDF Export**: Save your report instantly as a polished PDF using `html2pdf.js`.
-5. **Direct URL Ingestion**: Paste webpage links to instantly scrape and index them into semantic memory for prompt contexts.
-6. **Human-in-the-Loop Override**: Interrupt execution to steer the orchestration debate using `/api/override`.
+## 🏢 261 Agency Specialist Personas & 6 Divisions
+
+NeuroWeave features 261 dynamic agent personas divided across 6 functional divisions. The system auto-assigns the ideal specialist or allows manual filtering:
+
+```
+├── 🚀 Marketing Division (Growth Hacker, Viral Strategist, SEO Architect, Brand Strategist...)
+├── 💰 Finance Division (DCF Valuation Specialist, VC Analyst, Cap Table Architect, M&A Auditor...)
+├── 📦 Product Division (Technical Product Manager, UI/UX Lead, Feature Prioritization Lead...)
+├── 🏗️ Architecture Division (Distributed Systems Architect, Database Optimizer, Cloud FinOps...)
+├── 🛡️ Security Division (Penetration Tester, Zero-Trust Architect, Cloud Compliance Auditor...)
+└── 🔬 Research Division (Deep Learning Scientist, Benchmark Specialist, Literature Analyst...)
+```
 
 ---
 
-## Technical Installation & Setup (Windows Natively)
+## 💻 Frontend Dashboard & Interactive Features
 
-NeuroWeave is specifically engineered to remain **100% runnable out-of-the-box on Windows systems** without complex native C++ vector database or SQLite extension compilations.
+The user interface (`ui/index.html`, `ui/app.js`, `ui/styles.css`) is built with modern, ultra-responsive glassmorphism:
 
-### 1. Clone & Configure Environment
-Navigate to the directory and initialize local variables:
+1. **Live Thought Stream Logs Drawer**:
+   - Slides in from the right with microsecond-timestamped logs for every agent state transition, tool call, memory sync, and debate reconciliation.
+2. **Interactive SVG Execution DAG**:
+   - Live visual task cards with glowing status borders (`Queued`, `Running`, `Completed`, `Failed`) and flowing energy pulse connection tracks.
+3. **Opal Glassmorphic Node Inspector Modal**:
+   - Click any DAG node card to inspect Task ID, Execution Latency, Dependencies, Retries, executed Sandboxed Python Code, Quantitative Metrics, and Output Computations with 1-click clipboard copy.
+4. **Telemetry Waterfall Timeline**:
+   - Gantt chart visualizer profiling per-agent execution duration and resource latencies in milliseconds.
+5. **Dynamic Data Visualizer (Chart.js)**:
+   - Automatically renders responsive dark-theme Bar and Pie charts from embedded markdown code blocks.
+6. **Knowledge Vault & Live URL Ingestion**:
+   - Drag & drop local documents (`.txt`, `.md`, `.json`) or paste live web URLs to instantly scrape and index them into semantic vector memory.
+7. **1-Click Session History & State Reconstruction**:
+   - Click any past session from the sidebar to instantly restore the Strategic Report, DAG graph, traces timeline, and execution logs from the SQLite database.
+8. **Export Suite**:
+   - 1-click Markdown Copy, `.md` file download, and native `html2pdf.js` PDF Export.
+
+---
+
+## 📂 Project Directory Structure
+
+```
+NeuroWeave/
+├── main.py                     # Primary FastAPI application entrypoint & server launcher
+├── api/
+│   └── routes.py               # REST API endpoints & Server-Sent Events (SSE) stream handler
+├── core/
+│   ├── dag_engine.py           # Topological DAG task graph engine & dependency resolution
+│   ├── model_router.py         # Dynamic model selector (Gemini / OpenAI / Groq / Local)
+│   ├── persona_manager.py      # 261 Agency specialist personas registry & division router
+│   ├── state_manager.py        # Centralized thread-safe execution state manager & rollback checkpoints
+│   ├── superpower_synthesizer.py# Domain-aware adaptive report synthesizer with APA bibliography
+│   ├── structured_output.py    # Pydantic schema validation & self-healing JSON parsing
+│   └── tool_registry.py        # Decorator-driven sandboxed tool registry & RBAC enforcement
+├── agents/
+│   ├── orchestrator.py         # Master workflow orchestrator & pipeline lifecycle manager
+│   ├── intent_analyzer.py      # Intent classifier & persona mapping agent
+│   ├── planner.py              # Dynamic DAG formulation & goal expansion agent
+│   ├── researcher.py           # Deep web scraping & Wikipedia fact extraction agent
+│   ├── analyzer.py             # Python sandbox calculation & data analytics agent
+│   ├── critic.py               # NEXUS quality assurance & adversarial fact-checking agent
+│   ├── debate_engine.py        # 2-round dialectical debate consensus engine
+│   ├── memory_agent.py         # 3-tier hierarchical memory sync agent
+│   └── synthesizer.py          # Executive briefing compiler agent
+├── memory/
+│   ├── memory_manager.py       # Hierarchical memory manager (Working, Episodic, Semantic)
+│   └── vector_store.py         # Pure-Python TF-IDF semantic vector store
+├── storage/
+│   ├── database.py             # Asynchronous aiosqlite database connection manager
+│   ├── repository.py           # CRUD repository for sessions, reports, tasks, traces, & logs
+│   └── neuroweave.db           # SQLite database storing session archives & telemetry
+├── tools/
+│   ├── web_search.py           # DuckDuckGo search + Wikipedia paragraph crawler
+│   └── code_executor.py        # Safe restricted Python execution sandbox
+├── utils/
+│   ├── citation_manager.py     # APA evidence tracker & bibliography generator
+│   └── ml_utils.py             # Local NLP sentiment & keyword analysis engine
+├── security/
+│   ├── guardrails.py           # Prompt injection shields, SSRF filters, & AST checks
+│   └── permissions.py          # Role-Based Agent Control (RBAC) permission validator
+├── observability/
+│   ├── logger.py               # Structured asynchronous JSON logger
+│   ├── metrics.py              # Token counter & cost estimation tracker
+│   └── traces.py               # Distributed latency waterfall tracer
+├── ui/
+│   ├── index.html              # Premium glassmorphic interface layout & modal components
+│   ├── app.js                  # Frontend SSE stream handler, DAG plotter, & report renderer
+│   └── styles.css              # Dark-mode styling, animations, and glowing cyber accents
+└── requirements.txt            # Python dependencies (zero native C++ build requirements)
+```
+
+---
+
+## 🚀 Quickstart & Installation
+
+NeuroWeave is designed for zero-friction setup on **Windows, macOS, and Linux**.
+
+### 1. Prerequisites
+- Python 3.10 or higher (`python --version`)
+
+### 2. Clone & Install Dependencies
 ```bash
-# Verify your Python version (Python 3.9+ recommended)
-python --version
+git clone https://github.com/Akshitkumar23/NeuroWeave.git
+cd NeuroWeave
 
-# Install dependencies (Minimal, secure compile stack)
+# Install required Python packages
 pip install -r requirements.txt
 ```
 
-### 2. Configure Credentials (Optional)
-Fill in your API keys in the `.env` file to enable semantic embeddings and external routing. 
-*Note: If keys are left blank, the platform automatically switches to **Local Ollama Mode**, routing requests to LLaMA3 hosted locally on `http://localhost:11434`!*
+### 3. Configure Credentials (Optional)
+NeuroWeave works **100% locally out-of-the-box** without any API keys. If you wish to enable live cloud LLMs, create a `.env` file:
 
 ```ini
-# .env Configuration
+# .env Configuration (Optional)
 GEMINI_API_KEY="your-google-api-key"
 OPENAI_API_KEY="your-openai-api-key"
 GROQ_API_KEY="your-groq-api-key"
+
 PORT=8000
 HOST="127.0.0.1"
 ```
 
-### 3. Launch the Server Gateway
+### 4. Launch the Engine
 ```bash
 python main.py
 ```
-Open your browser and navigate to: **`http://127.0.0.1:8000`** to interact with the premium glassmorphic dashboard!
+Open your browser and navigate to: **`http://127.0.0.1:8000`**
 
 ---
 
-## Testing & Verification Strategy
+## 📡 REST & SSE API Reference
 
-We have created an automated integration and safety regression testing suite. Prior to running production workflows, execute the verification script to assert RBAC blocks, injection shields, and vector indexes:
+| Endpoint | Method | Description |
+| :--- | :---: | :--- |
+| `/api/analyze` | `POST` | Initiates an autonomous research session. Returns `{ "success": true, "session_id": "..." }`. |
+| `/api/stream/{session_id}` | `GET` | Real-time Server-Sent Events (SSE) stream yielding live JSON state checkpoints and thought logs. |
+| `/api/report/{session_id}` | `GET` | Retrieves synthesized strategic report, tasks DAG, telemetry traces, and execution logs from SQLite. |
+| `/api/sessions` | `GET` | Lists all historical research sessions stored in the local SQLite database. |
+| `/api/sessions/{session_id}`| `DELETE`| Deletes a session and its associated logs, traces, and metrics from SQLite. |
+| `/api/upload` | `POST` | Uploads a `.txt`, `.md`, or `.json` file into the semantic vector store. |
+| `/api/ingest-url` | `POST` | Scrapes external web URLs and indexes clean text chunks into memory. |
+| `/api/key-status` | `GET` | Returns active LLM providers and operational modes (`live` or `local synthesizer`). |
+| `/api/save-key` | `POST` | Persists user-supplied API keys directly to `.env` and updates active process environment. |
+
+---
+
+## 🧪 Automated Verification & Testing
+
+NeuroWeave includes automated headless browser integration tests and pipeline verification suites:
 
 ```bash
-# Execute automated offline test suite
-python scratch/verify_system.py
-```
+# Run Chrome end-to-end automated UI & SSE streaming verification
+python scratch/test_chrome_ui.py
 
-### Verification Outcomes:
-- **Guardrails Verified**: Prompt jailbreak attempts stripped, local host URL scraping blocked, and unsafe code execution imports (`import os`) successfully intercepted.
-- **Model Router Verified**: Selecting best models dynamically, with resilient failovers to local Ollama routines on API timeouts.
-- **State Checkpoints Verified**: Atomic task DAG additions and successful state rollbacks to previous transactional checkpoints.
-- **Agent Permission (RBAC) Interceptor Verified**: Attempts by the `Researcher` agent to trigger the safe `code_executor` tool successfully intercepted and blocked.
-- **Pure-Python Vector Store Ingestion Verified**: Semantic/keyphrase documents vectorized and retrieved with correct relevance ranks.
-- **SQLite Async Repository Verified**: Async CRUD operations executing without blocking thread gateways.
+# Run comprehensive multi-domain report audit
+python scratch/audit_db_reports.py
 
----
-
-## Realistic Example Research Workflow
-
-### Objective Input:
-```
-"Analyze AI automation startups in India, check competitor metrics and compute seed funding capitalization rules."
-```
-
-### Dynamic Multi-Agent Sequence Flow:
-
-```mermaid
-sequence_code
-Orchestrator -> IntentAnalyzer: 1. Classify Category & Intent
-IntentAnalyzer -> Orchestrator: Returns (Intent: Research+Business, Complexity: 8)
-Orchestrator -> Planner: 2. Generate Initial DAG Tasks
-Planner -> StateManager: Registers tasks: task_01 (Research), task_02 (Financials)
-Orchestrator -> Researcher: 3. Execute task_01 (Gather facts)
-Researcher -> WebSearchTool: Searches tech crunch & govt trends
-WebSearchTool -> CitationManager: Ingests reference URLs & snippets
-Researcher -> Orchestrator: Returns Cited facts (CAGR 24.5%, DevRev raising)
-Orchestrator -> Analyzer: 4. Execute task_02 (Compute stats)
-Analyzer -> CodeExecutorSandbox: Safe python run: compounding valuation rates
-Analyzer -> Orchestrator: Returns Capitalization model ($12.5M Series A)
-Orchestrator -> Critic: 5. Audit outputs & compute confidence
-Critic -> Orchestrator: Returns (Confidence: 0.68, Issues: Gaps in competitor risks)
-Orchestrator -> StateManager: 6. Trigger State Rollback (Restore transaction)
-Orchestrator -> DebateEngine: 7. Run 2-round cross arguments
-DebateEngine -> Orchestrator: Reconciles disputations into a Consensus
-Orchestrator -> Planner: 8. Goal Expansion (Inject task_03: Competitor Risks)
-Orchestrator -> Researcher: Execute task_03 (Gather risks facts)
-Orchestrator -> Synthesizer: 9. Synthesize Strategic Executive Report
-Synthesizer -> SQLite: Archives Markdown report & Telemetry metrics
-Synthesizer -> UI: Stream final Strategic Report & Gantt timelines
+# Run deep pipeline integration tests
+python test_deep_pipeline.py
 ```
 
 ---
 
-## Benchmark Metrics Comparison
+## 🛡️ Security & Guardrails
 
-Quantitative baselines comparing execution parameters:
-
-| Config Scenario | Linear Sequential | Reflective Loop | Debate & Memory |
-| :--- | :---: | :---: | :---: |
-| **Logic Verification** | None | Single Critic | **Double debate consensus** |
-| **Average Latency** | **1.2s** | 2.5s | 4.8s |
-| **Estimated Cost** | **$0.00009** | $0.00018 | $0.00045 |
-| **Factual Hallucinations** | 22.4% (high) | 6.8% (low) | **1.2% (zero-bounds)** |
-| **Citation Credibility** | Low | High | **Superior (APA Bibliography)** |
+- **AST Safe Execution Sandbox**: Intercepts dangerous Python operations (`os.system`, `subprocess`, `open`, `__import__`) before execution.
+- **SSRF Injection Filter**: Restricts web crawling to authorized public protocols and blocks private internal network probes (`localhost`, `127.0.0.1`, `10.0.0.0/8`, `192.168.0.0/16`).
+- **Role-Based Agent Control (RBAC)**: Enforces least-privilege tool access (e.g. `Researcher` is strictly prohibited from code execution).
 
 ---
 
-## Limitations & Future Improvements
+## 📄 License
 
-1. **Local Sandboxing limits**: The safe python execution blocks imports natively. Future upgrades could bind isolated container environments (e.g. Docker API) for unconstrained computations.
-2. **Indic Lang Support**: Expand standard prompt templates to natively support Indic script translation interfaces.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
