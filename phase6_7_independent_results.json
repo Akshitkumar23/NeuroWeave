@@ -1,0 +1,1883 @@
+{
+  "verdict": "INDEPENDENT COVERAGE FAILED",
+  "scorecard": [
+    {
+      "criterion": "Unsupported Claims",
+      "target": "<= 5.0%",
+      "actual": "0.00%",
+      "passed": true
+    },
+    {
+      "criterion": "Citation Precision",
+      "target": ">= 90.0%",
+      "actual": "100.00%",
+      "passed": true
+    },
+    {
+      "criterion": "Citation Recall",
+      "target": ">= 90.0%",
+      "actual": "20.24%",
+      "passed": false
+    },
+    {
+      "criterion": "Required Claim Recall",
+      "target": ">= 90.0%",
+      "actual": "37.80%",
+      "passed": false
+    },
+    {
+      "criterion": "Answer Completeness",
+      "target": ">= 90.0%",
+      "actual": "70.24%",
+      "passed": false
+    },
+    {
+      "criterion": "Numerical Accuracy",
+      "target": ">= 95.0%",
+      "actual": "16.67%",
+      "passed": false
+    },
+    {
+      "criterion": "Wrong-Formula Fallbacks",
+      "target": "== 0",
+      "actual": "0",
+      "passed": true
+    },
+    {
+      "criterion": "Correct Abstention Quality",
+      "target": ">= 90.0%",
+      "actual": "100.00%",
+      "passed": true
+    },
+    {
+      "criterion": "Source Conflict Handling",
+      "target": "== 100.0%",
+      "actual": "100.00%",
+      "passed": true
+    },
+    {
+      "criterion": "Deterministic Repeatability",
+      "target": "== 100.0%",
+      "actual": "100.00%",
+      "passed": true
+    },
+    {
+      "criterion": "Security / Token Leaks",
+      "target": "== 0",
+      "actual": "0",
+      "passed": true
+    }
+  ],
+  "metrics": {
+    "total_queries": 28,
+    "total_executions": 56,
+    "unsupported_claims_pct": 0.0,
+    "citation_precision_avg": 100.0,
+    "citation_recall_avg": 20.24,
+    "claim_recall_avg": 37.8,
+    "completeness_avg": 70.24,
+    "numerical_accuracy_pct": 16.67,
+    "numerical_total_checked": 12,
+    "numerical_accurate_count": 2,
+    "wrong_formula_fallbacks_count": 0,
+    "abstention_quality_pct": 100.0,
+    "source_conflict_handling_pct": 100.0,
+    "repeatability_pct": 100.0,
+    "security_leaks_count": 0,
+    "average_source_diversity": 1.36,
+    "adversarial_count": 0,
+    "category_stats": {
+      "Factual": {
+        "count": 10,
+        "claim_recall": 50.0,
+        "citation_precision": 100.0,
+        "completeness": 70.0,
+        "abstention_pass_pct": 100.0
+      },
+      "Technical": {
+        "count": 10,
+        "claim_recall": 35.0,
+        "citation_precision": 100.0,
+        "completeness": 46.666999999999994,
+        "abstention_pass_pct": 100.0
+      },
+      "Comparison": {
+        "count": 8,
+        "claim_recall": 26.041249999999998,
+        "citation_precision": 100.0,
+        "completeness": 100.0,
+        "abstention_pass_pct": 100.0
+      }
+    }
+  },
+  "queries": [
+    {
+      "id": "cov_fact_01",
+      "category": "Factual",
+      "query": "What HTTP status code indicates that the server understands the content type of the request entity but was unable to process the contained instructions?",
+      "claim_recall": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": true,
+      "eval_details": {
+        "query_id": "cov_fact_01",
+        "category": "Factual",
+        "report_length": 12072,
+        "claims_count": 2,
+        "citations_count": 23,
+        "claim_recall": 1.0,
+        "delivered_facts": [
+          "HTTP status code 422 indicates Unprocessable Entity or Unprocessable Content",
+          "The server understands the content type of the request payload but cannot process the contained instructions"
+        ],
+        "missing_facts": [],
+        "citation_precision": 1.0,
+        "citation_recall": 1.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "status_code",
+          "semantic_meaning",
+          "specification_reference"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "status_code": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                422.0,
+                422.0
+              ],
+              "nearby_extracted": [
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                -2.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 4,
+          "domains": [
+            "datatracker.ietf.org",
+            "doi.org",
+            "en.wikipedia.org",
+            "www.rfc-editor.org"
+          ],
+          "total_citations": 23,
+          "diversity_ratio": 0.1739
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_02",
+      "category": "Factual",
+      "query": "What TLS 1.3 alert description number corresponds to a decode_error, and which RFC specifies TLS 1.3 alerts?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_02",
+        "category": "Factual",
+        "report_length": 10124,
+        "claims_count": 2,
+        "citations_count": 12,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "RFC 8446 specifies the TLS 1.3 alert protocol and error numbers"
+        ],
+        "missing_facts": [
+          "The alert description number for decode_error is 50"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 1.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "alert_number",
+          "alert_name",
+          "rfc_reference"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "alert_number": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                50.0,
+                50.0
+              ],
+              "nearby_extracted": [
+                1.3,
+                1.3,
+                3.0,
+                1.3,
+                1.3,
+                1.3,
+                1.3,
+                1.3
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 4,
+          "domains": [
+            "datatracker.ietf.org",
+            "doi.org",
+            "en.wikipedia.org",
+            "www.rfc-editor.org"
+          ],
+          "total_citations": 12,
+          "diversity_ratio": 0.3333
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_03",
+      "category": "Factual",
+      "query": "In IPv6, what is the exact hexadecimal address prefix assigned to link-local unicast addresses?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.5,
+      "completeness": 0.6667,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_03",
+        "category": "Factual",
+        "report_length": 6355,
+        "claims_count": 1,
+        "citations_count": 2,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "Link-local addresses are designed for use on a single local network link"
+        ],
+        "missing_facts": [
+          "The IPv6 link-local prefix is fe80::/10"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.5,
+        "completeness": 0.6667,
+        "covered_dimensions": [
+          "prefix",
+          "address_type"
+        ],
+        "missing_dimensions": [
+          "routing_scope"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "prefix_bits": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                10.0,
+                10.0
+              ],
+              "nearby_extracted": [
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                -1.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "datatracker.ietf.org"
+          ],
+          "total_citations": 2,
+          "diversity_ratio": 0.5
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_04",
+      "category": "Factual",
+      "query": "What vulnerability is cataloged under CVE-2021-44228, what popular logging framework did it affect, and what protocol JNDI lookup did it exploit?",
+      "claim_recall": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.6667,
+      "completeness": 0.3333,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_04",
+        "category": "Factual",
+        "report_length": 10537,
+        "claims_count": 2,
+        "citations_count": 10,
+        "claim_recall": 1.0,
+        "delivered_facts": [
+          "CVE-2021-44228 is known as Log4Shell and affects Apache Log4j 2",
+          "It allows Remote Code Execution (RCE) by exploiting JNDI lookups (such as LDAP or RMI)"
+        ],
+        "missing_facts": [],
+        "citation_precision": 1.0,
+        "citation_recall": 0.6667,
+        "completeness": 0.3333,
+        "covered_dimensions": [
+          "vulnerability_name"
+        ],
+        "missing_dimensions": [
+          "affected_software",
+          "attack_vector"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "cve_year": {
+              "status": "ACCURATE",
+              "matched_value": 2021.0,
+              "acceptable_range": [
+                2021.0,
+                2021.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 4,
+          "domains": [
+            "api.osv.dev",
+            "datatracker.ietf.org",
+            "doi.org",
+            "www.rfc-editor.org"
+          ],
+          "total_citations": 10,
+          "diversity_ratio": 0.4
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_05",
+      "category": "Factual",
+      "query": "Which Python Enhancement Proposal (PEP) introduced standard type hints to the Python language?",
+      "claim_recall": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.5,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_05",
+        "category": "Factual",
+        "report_length": 8657,
+        "claims_count": 1,
+        "citations_count": 7,
+        "claim_recall": 0.0,
+        "delivered_facts": [],
+        "missing_facts": [
+          "PEP 484 introduced type hints into the Python standard ecosystem",
+          "It was introduced in Python 3.5 and standardized function annotations for static analysis"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.5,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "pep_number",
+          "python_version",
+          "purpose"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "pep_number": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                484.0,
+                484.0
+              ],
+              "nearby_extracted": [
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                -2021.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 2,
+          "domains": [
+            "doi.org",
+            "en.wikipedia.org"
+          ],
+          "total_citations": 7,
+          "diversity_ratio": 0.2857
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_06",
+      "category": "Factual",
+      "query": "What standard port number is assigned by IANA for the Border Gateway Protocol (BGP) over TCP?",
+      "claim_recall": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_06",
+        "category": "Factual",
+        "report_length": 8237,
+        "claims_count": 2,
+        "citations_count": 1,
+        "claim_recall": 0.0,
+        "delivered_facts": [],
+        "missing_facts": [
+          "BGP uses TCP port 179 for establishing peering sessions",
+          "Peers exchange routing reachability information across Autonomous Systems (AS)"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "port_number",
+          "transport_protocol",
+          "protocol_role"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "port": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                179.0,
+                179.0
+              ],
+              "nearby_extracted": [
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                82.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "doi.org"
+          ],
+          "total_citations": 1,
+          "diversity_ratio": 1.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_07",
+      "category": "Factual",
+      "query": "In Git repository internals, what four distinct object types can be stored in the object database?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.3333,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_07",
+        "category": "Factual",
+        "report_length": 10182,
+        "claims_count": 2,
+        "citations_count": 9,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "The four Git object types are blob, tree, commit, and annotated tag"
+        ],
+        "missing_facts": [
+          "Blobs store file data, trees represent directory listings, commits record snapshot history, and tags point to specific commits"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.3333,
+        "covered_dimensions": [
+          "object_types"
+        ],
+        "missing_dimensions": [
+          "roles",
+          "content_addressing"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "types_count": {
+              "status": "ACCURATE",
+              "matched_value": 4.0,
+              "acceptable_range": [
+                4.0,
+                4.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 2,
+          "domains": [
+            "datatracker.ietf.org",
+            "doi.org"
+          ],
+          "total_citations": 9,
+          "diversity_ratio": 0.2222
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_08",
+      "category": "Factual",
+      "query": "What Linux system call is used to duplicate an open file descriptor onto a specific target descriptor number atomically?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.5,
+      "completeness": 0.3333,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_08",
+        "category": "Factual",
+        "report_length": 10131,
+        "claims_count": 1,
+        "citations_count": 11,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "The operation is atomic; if the target descriptor was open, it is closed first without race condition"
+        ],
+        "missing_facts": [
+          "dup2 (or dup3) duplicates an existing file descriptor to a specified new descriptor number"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.5,
+        "completeness": 0.3333,
+        "covered_dimensions": [
+          "descriptor_handling"
+        ],
+        "missing_dimensions": [
+          "syscall_name",
+          "atomicity"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 3,
+          "domains": [
+            "datatracker.ietf.org",
+            "doi.org",
+            "en.wikipedia.org"
+          ],
+          "total_citations": 11,
+          "diversity_ratio": 0.2727
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_09",
+      "category": "Factual",
+      "query": "What ISO standard defines the two-letter (alpha-2) and three-letter (alpha-3) country codes such as US/USA and DE/DEU?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.6667,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_09",
+        "category": "Factual",
+        "report_length": 7598,
+        "claims_count": 1,
+        "citations_count": 2,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "ISO 3166-1 specifies alpha-2, alpha-3, and numeric country codes"
+        ],
+        "missing_facts": [
+          "Part of the ISO 3166 standard for country representation and subdivisions"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.6667,
+        "covered_dimensions": [
+          "standard_identifier",
+          "code_types"
+        ],
+        "missing_dimensions": [
+          "governing_body"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "standard_number": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                3166.0,
+                3166.0
+              ],
+              "nearby_extracted": [
+                -2.0,
+                -3.0,
+                3.0,
+                -2.0,
+                -3.0,
+                -2.0,
+                -3.0,
+                -2.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "datatracker.ietf.org"
+          ],
+          "total_citations": 2,
+          "diversity_ratio": 0.5
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_fact_10",
+      "category": "Factual",
+      "query": "What cryptographic hash algorithm was originally used for Git object identification, and what successor algorithm was selected to replace it?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.6667,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_fact_10",
+        "category": "Factual",
+        "report_length": 10988,
+        "claims_count": 2,
+        "citations_count": 13,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "Git originally used SHA-1 (160-bit)"
+        ],
+        "missing_facts": [
+          "SHA-256 was selected as the cryptographic successor algorithm for modern object identification"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.6667,
+        "covered_dimensions": [
+          "original_hash",
+          "successor_hash"
+        ],
+        "missing_dimensions": [
+          "bit_lengths"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "sha1_bits": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                160.0,
+                160.0
+              ],
+              "nearby_extracted": [
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                -2.0
+              ]
+            },
+            "sha256_bits": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                256.0,
+                256.0
+              ],
+              "nearby_extracted": [
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                -2.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 3,
+          "domains": [
+            "datatracker.ietf.org",
+            "doi.org",
+            "en.wikipedia.org"
+          ],
+          "total_citations": 13,
+          "diversity_ratio": 0.2308
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_01",
+      "category": "Technical",
+      "query": "How does the Raft distributed consensus algorithm resolve split-vote scenarios during leader election?",
+      "claim_recall": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.5,
+      "completeness": 0.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_01",
+        "category": "Technical",
+        "report_length": 8212,
+        "claims_count": 2,
+        "citations_count": 1,
+        "claim_recall": 0.0,
+        "delivered_facts": [],
+        "missing_facts": [
+          "Raft uses randomized election timeouts (e.g. 150-300ms) to prevent split votes from recurring indefinitely",
+          "If a split vote occurs (no candidate gets majority), the election times out and candidates increment term to start a new election"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.5,
+        "completeness": 0.0,
+        "covered_dimensions": [],
+        "missing_dimensions": [
+          "randomized_timeouts",
+          "term_increment",
+          "majority_rule"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "en.wikipedia.org"
+          ],
+          "total_citations": 1,
+          "diversity_ratio": 1.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_02",
+      "category": "Technical",
+      "query": "In Log-Structured Merge (LSM) trees, how does leveled compaction reduce space amplification compared to size-tiered compaction?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.3333,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_02",
+        "category": "Technical",
+        "report_length": 9108,
+        "claims_count": 3,
+        "citations_count": 2,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "Leveled compaction organizes data into exponentially larger levels (L1, L2, L3) with non-overlapping key ranges within each level"
+        ],
+        "missing_facts": [
+          "By keeping key ranges non-overlapping in levels > L0, redundant versions of keys are quickly pruned during level-by-level merge"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.3333,
+        "covered_dimensions": [
+          "space_amplification_tradeoff"
+        ],
+        "missing_dimensions": [
+          "non_overlapping_keys",
+          "exponential_levels"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "en.wikipedia.org"
+          ],
+          "total_citations": 2,
+          "diversity_ratio": 0.5
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_03",
+      "category": "Technical",
+      "query": "Explain the model-based congestion control approach used by TCP BBR compared to traditional loss-based congestion control algorithms.",
+      "claim_recall": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.3333,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_03",
+        "category": "Technical",
+        "report_length": 7723,
+        "claims_count": 1,
+        "citations_count": 2,
+        "claim_recall": 0.0,
+        "delivered_facts": [],
+        "missing_facts": [
+          "BBR builds an explicit physical model by measuring bottleneck bandwidth (BtlBw) and round-trip propagation time (RTprop)",
+          "It operates at Kleinrock's optimal operating point (pacing at BtlBw with inflight data equal to BDP) without relying on packet loss"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.3333,
+        "covered_dimensions": [
+          "bufferbloat_mitigation"
+        ],
+        "missing_dimensions": [
+          "bottleneck_bandwidth",
+          "round_trip_delay"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "en.wikipedia.org"
+          ],
+          "total_citations": 2,
+          "diversity_ratio": 0.5
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_04",
+      "category": "Technical",
+      "query": "How does Ephemeral Elliptic Curve Diffie-Hellman (ECDHE) provide Forward Secrecy in TLS handshakes?",
+      "claim_recall": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.6667,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_04",
+        "category": "Technical",
+        "report_length": 7307,
+        "claims_count": 1,
+        "citations_count": 2,
+        "claim_recall": 0.0,
+        "delivered_facts": [],
+        "missing_facts": [
+          "ECDHE generates unique ephemeral key pairs for each individual TLS handshake session",
+          "Forward Secrecy ensures that even if the server's static private key is compromised in the future, past encrypted sessions cannot be decrypted"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.6667,
+        "covered_dimensions": [
+          "ephemeral_keys",
+          "forward_secrecy_definition"
+        ],
+        "missing_dimensions": [
+          "compromise_isolation"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "datatracker.ietf.org"
+          ],
+          "total_citations": 2,
+          "diversity_ratio": 0.5
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_05",
+      "category": "Technical",
+      "query": "How does the Linux kernel eBPF verifier guarantee that loaded eBPF programs cannot compromise operating system stability?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_05",
+        "category": "Technical",
+        "report_length": 7448,
+        "claims_count": 1,
+        "citations_count": 1,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "The eBPF verifier performs static control-flow DAG analysis on bytecode before kernel execution"
+        ],
+        "missing_facts": [
+          "It guarantees termination (disallowing unbounded loops), validates all memory accesses to in-bounds pointers, and prevents uninitialized register reads"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "static_analysis",
+          "termination_guarantee",
+          "memory_safety"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "en.wikipedia.org"
+          ],
+          "total_citations": 1,
+          "diversity_ratio": 1.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_06",
+      "category": "Technical",
+      "query": "Explain the MESI cache coherence protocol and describe the state transition when a processor writes to a cache line in the Shared state.",
+      "claim_recall": 1.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_06",
+        "category": "Technical",
+        "report_length": 9687,
+        "claims_count": 4,
+        "citations_count": 4,
+        "claim_recall": 1.0,
+        "delivered_facts": [
+          "MESI defines four states: Modified, Exclusive, Shared, and Invalid",
+          "When a processor writes to a line in Shared (S) state, it must broadcast an Invalidation (or Read-With-Intent-To-Modify) on the bus, transitioning other caches to Invalid (I) and itself to Modified (M)"
+        ],
+        "missing_facts": [],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.0,
+        "covered_dimensions": [],
+        "missing_dimensions": [
+          "four_states",
+          "write_invalidation",
+          "transition_to_modified"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "states_count": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                4.0,
+                4.0
+              ],
+              "nearby_extracted": [
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                1.0,
+                2.0,
+                3.0,
+                86.0
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "doi.org"
+          ],
+          "total_citations": 4,
+          "diversity_ratio": 0.25
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_07",
+      "category": "Technical",
+      "query": "In PostgreSQL multi-version concurrency control (MVCC), how does the VACUUM process reclaim dead tuple storage space?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.6667,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_07",
+        "category": "Technical",
+        "report_length": 7671,
+        "claims_count": 1,
+        "citations_count": 2,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "VACUUM identifies dead row versions (tuples) that are older than any active transaction's snapshot"
+        ],
+        "missing_facts": [
+          "It marks dead line pointers as unused and updates the Free Space Map (FSM) so subsequent INSERTs/UPDATEs can reuse the space without locking the table"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.6667,
+        "covered_dimensions": [
+          "dead_tuples",
+          "space_reuse"
+        ],
+        "missing_dimensions": [
+          "free_space_map"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "en.wikipedia.org"
+          ],
+          "total_citations": 2,
+          "diversity_ratio": 0.5
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_08",
+      "category": "Technical",
+      "query": "How does consistent hashing with virtual nodes mitigate hot spotting when scaling distributed key-value storage clusters?",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.6667,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_08",
+        "category": "Technical",
+        "report_length": 7932,
+        "claims_count": 2,
+        "citations_count": 1,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "Consistent hashing maps nodes and keys to a continuous hash ring (e.g. 0 to 2^32-1)"
+        ],
+        "missing_facts": [
+          "Virtual nodes (vnodes) assign multiple token points across the ring per physical server, ensuring keys are evenly distributed even with heterogeneous server capacities"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.6667,
+        "covered_dimensions": [
+          "hash_ring",
+          "virtual_nodes"
+        ],
+        "missing_dimensions": [
+          "minimal_key_rebalancing"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "doi.org"
+          ],
+          "total_citations": 1,
+          "diversity_ratio": 1.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_09",
+      "category": "Technical",
+      "query": "How does HPACK header compression in HTTP/2 mitigate the CRIME attack vulnerabilities present in HTTP/1.1 TLS compression?",
+      "claim_recall": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 1.0,
+      "completeness": 0.3333,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_09",
+        "category": "Technical",
+        "report_length": 9600,
+        "claims_count": 4,
+        "citations_count": 4,
+        "claim_recall": 0.0,
+        "delivered_facts": [],
+        "missing_facts": [
+          "HPACK replaces generic LZ77/gzip stream compression with dedicated static and dynamic index tables",
+          "It prevents attackers from using chosen-plaintext injection to observe compressed ciphertext length changes and recover secret session cookies"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 1.0,
+        "completeness": 0.3333,
+        "covered_dimensions": [
+          "crime_attack_mitigation"
+        ],
+        "missing_dimensions": [
+          "table_based_indexing",
+          "huffman_encoding"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": false,
+          "accuracy_pct": 0.0,
+          "details": {
+            "static_table_entries": {
+              "status": "DISCREPANCY",
+              "acceptable_range": [
+                61.0,
+                61.0
+              ],
+              "nearby_extracted": [
+                2.0,
+                1.1,
+                508.0,
+                3.0,
+                2.0,
+                1.1,
+                2.0,
+                1.1
+              ]
+            }
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 3,
+          "domains": [
+            "datatracker.ietf.org",
+            "doi.org",
+            "rfc-editor.org"
+          ],
+          "total_citations": 4,
+          "diversity_ratio": 0.75
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_tech_10",
+      "category": "Technical",
+      "query": "Explain how Write-Ahead Logging (WAL) satisfies the ACID Durability guarantee while allowing asynchronous dirty page flushing.",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 0.6667,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_tech_10",
+        "category": "Technical",
+        "report_length": 6068,
+        "claims_count": 2,
+        "citations_count": 0,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "Because changes are durably recorded in sequential log order, modified (dirty) in-memory data buffer pages can be written to disk asynchronously via checkpoints"
+        ],
+        "missing_facts": [
+          "The WAL protocol dictates that log records describing data changes must be flushed and fsynced to non-volatile disk before the corresponding commit returns"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 0.6667,
+        "covered_dimensions": [
+          "durability_invariant",
+          "asynchronous_checkpointing"
+        ],
+        "missing_dimensions": [
+          "log_precedes_data"
+        ],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 0,
+          "domains": [],
+          "total_citations": 0,
+          "diversity_ratio": 0.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_comp_01",
+      "category": "Comparison",
+      "query": "Compare PostgreSQL and MySQL across concurrency control (MVCC implementation), replication mechanisms, and table storage engines.",
+      "claim_recall": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_comp_01",
+        "category": "Comparison",
+        "report_length": 6373,
+        "claims_count": 2,
+        "citations_count": 0,
+        "claim_recall": 0.0,
+        "delivered_facts": [],
+        "missing_facts": [
+          "PostgreSQL uses append-only row versioning directly in table heap with VACUUM, whereas MySQL InnoDB writes previous row versions into undo logs",
+          "PostgreSQL replication streams binary WAL records, while MySQL natively replicates logical/row-based binlog events",
+          "PostgreSQL utilizes a single unified storage engine, while MySQL features a pluggable storage engine architecture (with InnoDB as default)"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "concurrency_control",
+          "replication_mechanisms",
+          "storage_engines"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 0,
+          "domains": [],
+          "total_citations": 0,
+          "diversity_ratio": 0.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_comp_02",
+      "category": "Comparison",
+      "query": "Compare REST and gRPC across transport protocol, message serialization format, bidirectional streaming support, and browser adoption.",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_comp_02",
+        "category": "Comparison",
+        "report_length": 6474,
+        "claims_count": 2,
+        "citations_count": 1,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "REST predominantly uses human-readable JSON/text serialization, whereas gRPC uses compact binary Protocol Buffers (Protobuf)",
+          "gRPC natively supports client, server, and bidirectional multiplexed streaming, while standard REST only supports unidirectional responses (or Server-Sent Events)"
+        ],
+        "missing_facts": [
+          "REST typically runs over HTTP/1.1 or HTTP/2, whereas gRPC strictly mandates HTTP/2 for multiplexing and framing",
+          "REST enjoys universal native browser support, whereas gRPC requires a proxy translation layer (gRPC-Web) for web browsers"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "transport_protocol",
+          "serialization_format",
+          "streaming_support",
+          "browser_adoption"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "doi.org"
+          ],
+          "total_citations": 1,
+          "diversity_ratio": 1.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_comp_03",
+      "category": "Comparison",
+      "query": "Compare Apache Kafka and RabbitMQ across message persistence architecture, queue consumption model, message routing capabilities, and consumer replayability.",
+      "claim_recall": 0.25,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_comp_03",
+        "category": "Comparison",
+        "report_length": 6481,
+        "claims_count": 2,
+        "citations_count": 0,
+        "claim_recall": 0.25,
+        "delivered_facts": [
+          "Kafka uses an immutable append-only distributed commit log on disk, while RabbitMQ uses memory-first queues that page to disk under memory pressure"
+        ],
+        "missing_facts": [
+          "Kafka uses a pull-based consumer model where consumers track their own offsets, while RabbitMQ primarily uses a push-based broker delivery model with acknowledgements",
+          "RabbitMQ provides complex routing via exchanges (direct, topic, fanout, headers), whereas Kafka routes simply by topic and partition key hashing",
+          "Kafka messages remain persisted for a configured retention period allowing replay, whereas RabbitMQ deletes messages once acknowledged by consumers"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "persistence_architecture",
+          "consumption_model",
+          "routing_capabilities",
+          "consumer_replayability"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 0,
+          "domains": [],
+          "total_citations": 0,
+          "diversity_ratio": 0.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_comp_04",
+      "category": "Comparison",
+      "query": "Compare Redis and Memcached across data structures support, clustering/replication capabilities, persistence options, and multithreading architecture.",
+      "claim_recall": 0.25,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_comp_04",
+        "category": "Comparison",
+        "report_length": 6489,
+        "claims_count": 2,
+        "citations_count": 0,
+        "claim_recall": 0.25,
+        "delivered_facts": [
+          "Redis features built-in primary-replica replication and Redis Cluster sharding, whereas Memcached relies on client-side consistent hashing for clustering"
+        ],
+        "missing_facts": [
+          "Redis supports rich data types (strings, hashes, lists, sets, sorted sets, streams), whereas Memcached only supports raw key-value string/byte blobs",
+          "Redis provides disk persistence via RDB snapshots and AOF logs, while Memcached is purely volatile with zero native persistence",
+          "Memcached uses a multi-threaded architecture with worker threads, whereas Redis historically executes commands on a single-threaded event loop (with I/O threading in v6+)"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "data_structures",
+          "clustering_replication",
+          "persistence_options",
+          "multithreading_model"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 0,
+          "domains": [],
+          "total_citations": 0,
+          "diversity_ratio": 0.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_comp_05",
+      "category": "Comparison",
+      "query": "Compare Docker container virtualization and WebAssembly (Wasm) sandboxing across startup latency, operating system coupling, memory isolation model, and file system access.",
+      "claim_recall": 0.25,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_comp_05",
+        "category": "Comparison",
+        "report_length": 6554,
+        "claims_count": 2,
+        "citations_count": 0,
+        "claim_recall": 0.25,
+        "delivered_facts": [
+          "Docker containers take hundreds of milliseconds to seconds to start, while Wasm modules instantiate in sub-milliseconds (microseconds)"
+        ],
+        "missing_facts": [
+          "Docker containers are coupled to the host OS kernel (Linux namespaces/cgroups), while Wasm is OS-agnostic architecture bytecode executed by a runtime (Wasmtime, V8)",
+          "Docker isolates processes via kernel primitives, while Wasm isolates execution inside a sandboxed linear memory space with hardware-enforced bounds checks",
+          "Docker containers mount an entire root filesystem, while Wasm uses WASI capability-based security where file access requires explicit pre-opened directory grants"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "startup_latency",
+          "os_coupling",
+          "memory_isolation",
+          "filesystem_access"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 0,
+          "domains": [],
+          "total_citations": 0,
+          "diversity_ratio": 0.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_comp_06",
+      "category": "Comparison",
+      "query": "Compare Monolithic and Microservice architectures across deployment decoupling, operational complexity, network overhead, and failure isolation.",
+      "claim_recall": 0.0,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_comp_06",
+        "category": "Comparison",
+        "report_length": 6512,
+        "claims_count": 2,
+        "citations_count": 0,
+        "claim_recall": 0.0,
+        "delivered_facts": [],
+        "missing_facts": [
+          "Monoliths deploy as a single unified artifact, while microservices permit independent decoupled deployments per service domain",
+          "Microservices introduce significant operational complexity (distributed tracing, service discovery, API gateways, network mesh), whereas monoliths are operationally simpler",
+          "Monoliths execute in-process memory calls with negligible latency, while microservices incur network serialization and RPC/HTTP network round-trip overhead",
+          "In a monolith an unhandled exception or memory leak can take down the entire process, while microservices isolate the blast radius to the affected service"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "deployment_decoupling",
+          "operational_complexity",
+          "network_overhead",
+          "failure_isolation"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 0,
+          "domains": [],
+          "total_citations": 0,
+          "diversity_ratio": 0.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_comp_07",
+      "category": "Comparison",
+      "query": "Compare GraphQL and REST APIs across over-fetching/under-fetching control, endpoint topology, schema definition and type safety, and HTTP caching efficiency.",
+      "claim_recall": 0.5,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_comp_07",
+        "category": "Comparison",
+        "report_length": 6529,
+        "claims_count": 2,
+        "citations_count": 0,
+        "claim_recall": 0.5,
+        "delivered_facts": [
+          "GraphQL allows clients to request exact fields, eliminating over-fetching and under-fetching, while REST endpoints return fixed data models",
+          "GraphQL enforces a strongly-typed schema (Schema Definition Language), while standard REST relies on optional documentation or OpenAPI specifications"
+        ],
+        "missing_facts": [
+          "GraphQL typically exposes a single endpoint (e.g. POST /graphql), whereas REST uses resource-oriented multi-endpoint URI hierarchies",
+          "REST benefits from native URL-based HTTP caching (CDN/browser) on GET endpoints, while GraphQL primarily uses POST making HTTP-level edge caching difficult"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "fetching_control",
+          "endpoint_topology",
+          "schema_type_safety",
+          "http_caching"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 0,
+          "domains": [],
+          "total_citations": 0,
+          "diversity_ratio": 0.0
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    },
+    {
+      "id": "cov_comp_08",
+      "category": "Comparison",
+      "query": "Compare Optimistic Concurrency Control (OCC) and Pessimistic Locking across read-heavy vs write-heavy workloads, deadlock risk, and retry overhead.",
+      "claim_recall": 0.3333,
+      "citation_precision": 1.0,
+      "citation_recall": 0.0,
+      "completeness": 1.0,
+      "repeatability_match": true,
+      "passed_all_checks": false,
+      "eval_details": {
+        "query_id": "cov_comp_08",
+        "category": "Comparison",
+        "report_length": 8544,
+        "claims_count": 1,
+        "citations_count": 2,
+        "claim_recall": 0.3333,
+        "delivered_facts": [
+          "Under high write contention, OCC incurs severe retry overhead due to aborted commits, whereas Pessimistic locking serializes execution through blocking wait queues"
+        ],
+        "missing_facts": [
+          "OCC excels in read-heavy low-contention workloads by validating versions at commit, while Pessimistic locking excels in write-heavy high-contention workloads by acquiring exclusive locks upfront",
+          "OCC has zero risk of lock deadlocks because transactions do not hold mutual locks, whereas Pessimistic locking can encounter deadlocks requiring deadlock detection and rollback"
+        ],
+        "citation_precision": 1.0,
+        "citation_recall": 0.0,
+        "completeness": 1.0,
+        "covered_dimensions": [
+          "workload_suitability",
+          "deadlock_risk",
+          "retry_overhead"
+        ],
+        "missing_dimensions": [],
+        "numerical_accuracy": {
+          "is_accurate": true,
+          "accuracy_pct": 100.0,
+          "details": {
+            "status": "NO_NUMERICAL_REQUIREMENTS"
+          },
+          "wrong_formula_detected": false
+        },
+        "abstention": {
+          "passed": true,
+          "reason": "CORRECT_ANSWER_DELIVERED",
+          "expected_behavior": "ANSWER"
+        },
+        "source_diversity": {
+          "unique_domain_count": 1,
+          "domains": [
+            "en.wikipedia.org"
+          ],
+          "total_citations": 2,
+          "diversity_ratio": 0.5
+        },
+        "unsupported_claims_pct": 0.0
+      }
+    }
+  ]
+}
